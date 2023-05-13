@@ -8,7 +8,7 @@ import (
 	"github.com/yieldray/surgecli/types"
 )
 
-func Delete(client *http.Client, token, domain string) (types.Teardown, error) {
+func Teardown(client *http.Client, token, domain string) (types.Teardown, error) {
 	teardown := types.Teardown{}
 
 	req, _ := http.NewRequest("DELETE", fmt.Sprintf("https://surge.surge.sh/%s", domain), nil)

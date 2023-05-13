@@ -52,6 +52,7 @@ type Config struct {
 	Hsts     interface{} `json:"hsts"`
 	TTL      interface{} `json:"ttl"`
 }
+
 type Certs struct {
 	Subject         string   `json:"subject"`
 	Issuer          string   `json:"issuer"`
@@ -83,10 +84,12 @@ type Metadata struct {
 	Current          bool          `json:"current"`
 	Preview          string        `json:"preview"`
 }
+
 type Urls struct {
 	Name   string `json:"name"`
 	Domain string `json:"domain"`
 }
+
 type Instances struct {
 	Type              string `json:"type"`
 	Provider          string `json:"provider"`
@@ -105,7 +108,6 @@ type Teardown struct {
 	NsDomain  string      `json:"nsDomain"`
 	Instances []Instances `json:"instances"`
 }
-
 
 type List []struct {
 	Domain     string `json:"domain"`
@@ -133,7 +135,6 @@ type List []struct {
 	Preview          string        `json:"preview"`
 	TimeAgoInWords   string        `json:"timeAgoInWords"`
 }
-
 
 type Token struct {
 	Email string `json:"email"`

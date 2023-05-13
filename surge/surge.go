@@ -18,6 +18,11 @@ func (surge *Surge) GetEmailAndToken() (string, string) {
 	return surge.email, surge.token
 }
 
+func (surge *Surge) SetEmailAndToken(email, token string) {
+	surge.email = email
+	surge.token = token
+}
+
 // new a Surge instance with default http client
 // and automatically load emain&token from `~/.netrc`
 // if there is still no token, please call `surge.Login()` to login
@@ -83,7 +88,7 @@ func (surge *Surge) Account() (types.Account, error) {
 }
 
 func (surge *Surge) Teardown(domain string) (types.Teardown, error) {
-	return api.Delete(surge.httpClient, surge.token, domain)
+	return api.Teardown(surge.httpClient, surge.token, domain)
 }
 
 func (surge *Surge) Whoami() string {
