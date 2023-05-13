@@ -32,6 +32,10 @@ func (c *privateSurgeCLI) UploadCommand() *cli.Command {
 				fmt.Println(`use "<CUSTOM_SUB_DOMAIN>.surge.sh" if you do not have a domain`)
 				fmt.Println("to setup custom domain, see https://surge.sh/help/adding-a-custom-domain")
 				return nil
+			} else {
+				if !isDir(dir) {
+					return fmt.Errorf("%s is not a directory", dir)
+				}
 			}
 
 			domain := cCtx.Args().Get(1)
@@ -68,6 +72,14 @@ func (c *privateSurgeCLI) UploadCommand() *cli.Command {
 	}
 }
 
+func isDir(f string) bool {
+	if fi, err := os.Stat(f); err != nil {
+		return false
+	} else {
+		return fi.IsDir()
+	}
+}
+
 func randomString(n int) string {
 	const letters = "abcdefghijklmnopqrstuvwxyz"
 	bytes := make([]byte, n)
@@ -79,7 +91,11 @@ func randomString(n int) string {
 }
 
 func onUploadEvent(byteLine []byte) {
-	m := make(map[string]interface{})
+	if len(byteLine) == 0 {
+		return
+	}
+
+	m := make(map[string]any)
 	json.Unmarshal(byteLine, &m)
 
 	t := m["type"].(string)
@@ -94,7 +110,8 @@ func onUploadEvent(byteLine []byte) {
 			} else {
 				fmt.Printf("%-7s %s \n", p.Id, p.File)
 			}
-			fmt.Printf("%.2f%% %d/%d\n", float32(p.Written)*100/float32(p.Total), p.Written, p.Total)
+			percentage := fmt.Sprintf("%.2f%%", float32(p.Written)*100/float32(p.Total))
+			fmt.Printf("%-7s %d/%d\n", percentage, p.Written, p.Total)
 		}
 	case "subscription":
 		{
@@ -111,7 +128,7 @@ func onUploadEvent(byteLine []byte) {
 			json.Unmarshal(byteLine, &p)
 
 			for _, url := range p.Urls {
-				fmt.Printf("%s\nhttps://%s\n", url.Name, url.Domain)
+				fmt.Printf("[%-12s]\nhttps://%s\n", url.Name, url.Domain)
 			}
 
 		}

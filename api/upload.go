@@ -32,6 +32,11 @@ func Upload(client *http.Client, token, domain, src string, onEventStream func(b
 	if !isDir(src) {
 		return errors.New("not a directory")
 	}
+	// 获取绝对路径，保证tar是压缩了一个文件夹而不是其内容
+	src, err = filepath.Abs(src)
+	if err != nil {
+		return err
+	}
 
 	buf := new(bytes.Buffer)
 	gw := gzip.NewWriter(buf)
@@ -52,10 +57,11 @@ func Upload(client *http.Client, token, domain, src string, onEventStream func(b
 		unixPath := filepath.ToSlash(path)
 
 		// 默认跳过文件夹
-		if info.IsDir() {
+		if info.IsDir() && info.Name() != "." {
 			defaultIgnoreList := []string{".git", ".*", ".*.*~", "node_modules", "bower_components"}
 			for _, pattern := range defaultIgnoreList {
 				matched, _ := filepath.Match(pattern, info.Name())
+				// fmt.Println(info.Name(), pattern, matched)
 				if matched {
 					return filepath.SkipDir
 				}
@@ -93,19 +99,17 @@ func Upload(client *http.Client, token, domain, src string, onEventStream func(b
 
 		// 打开文件
 		fr, err := os.Open(path)
-		defer func() {
-			if err = fr.Close(); err != nil {
-				return
-			}
-		}()
-
 		if err != nil {
 			return err
 		}
 
 		// copy 文件数据到 tw
 		_, err = io.Copy(tw, fr)
-		return err
+		if err != nil {
+			return err
+		}
+
+		return fr.Close()
 	})
 
 	if err != nil {
