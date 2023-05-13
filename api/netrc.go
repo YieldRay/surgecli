@@ -53,7 +53,25 @@ func RemoveNetrc() error {
 	}
 }
 
+func isExist(path string) bool {
+	_, err := os.Stat(path)
+	if err != nil {
+		if os.IsExist(err) {
+			return true
+		}
+		if os.IsNotExist(err) {
+			return false
+		}
+		return false
+	}
+	return true
+}
+
 func WriteNetrc(login, password string) error {
+	if !isExist(netrcPath) {
+		// Create .netrc file if not exists
+		os.WriteFile(netrcPath, []byte{}, 0400)
+	}
 	if myNetrc, err := netrc.ParseFile(netrcPath); err != nil {
 		return err
 	} else {

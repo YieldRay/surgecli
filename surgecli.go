@@ -34,6 +34,8 @@ func main() {
 	surgesh.SetHTTPClient(&http.Client{Transport: &Rt{}})
 
 	app := &cli.App{
+		Name:  "surgecli",
+		Usage: "thrid party surge.sh cli",
 		Commands: []*cli.Command{
 			{
 				Name:  "login",
@@ -125,7 +127,9 @@ func main() {
 						domain = strings.Trim(string(b), " ")
 					}
 					if domain == "" {
-						fmt.Println(`domain cannot be empty! use "<YOU_CUSTOM_SUB_DOMAIN>.surge.sh" if you do not have a domain`)
+						fmt.Println(`Usage: surgecli upload <path_to_dir> <domain>`)
+						fmt.Println(`domain cannot be empty!`)
+						fmt.Println(`use "<CUSTOM_SUB_DOMAIN>.surge.sh" if you do not have a domain`)
 						fmt.Println("to setup custom domain, see https://surge.sh/help/adding-a-custom-domain")
 						return nil
 					} else {
@@ -164,6 +168,8 @@ func main() {
 			},
 		},
 	}
+
+	app.Suggest = true
 
 	if err := app.Run(os.Args); err != nil {
 		fmt.Fprintln(os.Stderr, err)

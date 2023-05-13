@@ -16,11 +16,23 @@ import (
 	"time"
 )
 
+func isDir(f string) bool {
+	if fi, err := os.Stat(f); err != nil {
+		return false
+	} else {
+		return fi.IsDir()
+	}
+}
+
 // client =  &http.Client{}
 // domain = domainplaceholder.surge.sh
 // src = <the directory path>
 // onEventStream <jsonString=>void>
 func Upload(client *http.Client, token, domain, src string, onEventStream func(byteLine []byte)) (err error) {
+	if !isDir(src) {
+		return errors.New("not a directory")
+	}
+
 	buf := new(bytes.Buffer)
 	gw := gzip.NewWriter(buf)
 	tw := tar.NewWriter(gw)
