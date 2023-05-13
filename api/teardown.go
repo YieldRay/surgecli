@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -17,8 +18,18 @@ func Teardown(client *http.Client, token, domain string) (types.Teardown, error)
 	if res, err := client.Do(req); err != nil {
 		return teardown, err
 	} else {
-		json.NewDecoder(res.Body).Decode(&teardown)
-		return teardown, nil
+		if res.StatusCode == 200 {
+			json.NewDecoder(res.Body).Decode(&teardown)
+			return teardown, nil
+		} else {
+			teardownErr := TeardownError{}
+			json.NewDecoder(res.Body).Decode(&teardownErr)
+			return teardown, errors.New(teardownErr.Message)
+		}
 	}
 
+}
+
+type TeardownError struct {
+	Message string `json:"message"`
 }

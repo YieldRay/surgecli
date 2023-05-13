@@ -2,12 +2,17 @@ package api
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"path"
 	"runtime"
 
 	"github.com/bgentry/go-netrc/netrc"
 )
+
+// .netrc should be 0400 in unix
+// but it will cause problem for windows
+// so we use 0600 here
 
 //```~/.netrc
 //machine surge.surge.sh
@@ -18,14 +23,14 @@ import (
 var netrcPath string
 
 func init() {
-	var env string
 	if runtime.GOOS == "windows" {
-		env = "USERPROFILE"
+		home := os.Getenv("USERPROFILE")
+		netrcPath = fmt.Sprintf("%s\\%s", home, ".netrc")
 	} else {
-		env = "HOME"
+		home := os.Getenv("HOME")
+		netrcPath = path.Join(home, ".netrc")
 	}
-	home := os.Getenv(env)
-	netrcPath = path.Join(home, ".netrc")
+
 }
 
 func saveMyNetrc(myNetrc *netrc.Netrc) error {
@@ -34,8 +39,7 @@ func saveMyNetrc(myNetrc *netrc.Netrc) error {
 		return err
 	}
 
-	err = os.WriteFile(netrcPath, b, 0400)
-	if err != nil {
+	if err = os.WriteFile(netrcPath, b, 0600); err != nil {
 		return err
 	}
 
@@ -54,8 +58,7 @@ func RemoveNetrc() error {
 }
 
 func isExist(path string) bool {
-	_, err := os.Stat(path)
-	if err != nil {
+	if s, err := os.Stat(path); err != nil {
 		if os.IsExist(err) {
 			return true
 		}
@@ -63,14 +66,15 @@ func isExist(path string) bool {
 			return false
 		}
 		return false
+	} else {
+		return s.Mode().IsRegular()
 	}
-	return true
 }
 
 func WriteNetrc(login, password string) error {
 	if !isExist(netrcPath) {
 		// Create .netrc file if not exists
-		os.WriteFile(netrcPath, []byte{}, 0400)
+		os.WriteFile(netrcPath, []byte{}, 0600)
 	}
 	if myNetrc, err := netrc.ParseFile(netrcPath); err != nil {
 		return err

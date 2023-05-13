@@ -2,6 +2,7 @@ package cli
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/urfave/cli/v2"
 )
@@ -9,7 +10,7 @@ import (
 func (c *privateSurgeCLI) AccountCommand() *cli.Command {
 	return &cli.Command{
 		Name:  "account",
-		Usage: "show account information",
+		Usage: "Show account information",
 		Action: func(cCtx *cli.Context) error {
 			if email := c.surgesh.Whoami(); email == "" {
 				fmt.Println("<YOU ARE NOT LOGGED IN>")
@@ -19,7 +20,11 @@ func (c *privateSurgeCLI) AccountCommand() *cli.Command {
 			if err != nil {
 				return err
 			}
-			fmt.Println(ac)
+			fmt.Printf("%-6s: %s\n", "Email", ac.Email)
+			fmt.Printf("%-6s: %s\n", "ID", ac.ID)
+			fmt.Printf("%-6s: %s\n", "UUID", ac.UUID)
+			fmt.Printf("%-6s: %s\n", "Plan", ac.Plan.Name)
+			fmt.Printf("\n[FEATURES]\n%s", strings.Join(ac.Plan.Perks, "\n"))
 
 			return nil
 		},

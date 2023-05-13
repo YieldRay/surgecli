@@ -1,22 +1,39 @@
 # surgecli
 
-third party [surge.sh](https://surge.sh) cli written in golang
+third party [surge.sh](https://surge.sh) cli written in golang  
+currently, `.surgeignore` file is not fully supported
+
+## usage
 
 ```sh
+surgecli login <username> <password> # skip this if you have already logged in
+surgecli upload ./dist mydomain.example.net
+```
+
+```
 USAGE:
    surgecli [global options] command [command options] [arguments...]
 
 COMMANDS:
-   login           login (or create new account) to surge.sh
-   logout          logout to surge.sh
-   account         show account information
-   whoami          show my email
-   list            list my sites
-   upload, deploy  upload directory to surge.sh with specified domain
-   teardown        delete site from surge.sh
+   login           Login (or create new account) to surge.sh
+   logout          Logout from surge.sh
+   whoami          Show my email
+   account         Show account information
+   list            List my sites
+   teardown        Delete site from surge.sh
+   upload, deploy  Upload a directory (a.k.a. deploy a project) to surge.sh
    help, h         Shows a list of commands or help for one command
 
 GLOBAL OPTIONS:
-   --API_HOST value  configure the API host (default: "https://surge.surge.sh")
-   --help, -h        show help
+   --api value  configure the API host (default: "https://surge.surge.sh")
+   --debug      toggle debug on (default: false)
+   --help, -h   show help
+```
+
+## build
+
+```sh
+git clone https://github.com/YieldRay/surgecli.git
+cd surgecli
+go build surgecli.go
 ```

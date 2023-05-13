@@ -9,7 +9,7 @@ import (
 func (c *privateSurgeCLI) WhoamiCommand() *cli.Command {
 	return &cli.Command{
 		Name:  "whoami",
-		Usage: "show my email",
+		Usage: "Show my email",
 		Action: func(cCtx *cli.Context) error {
 			if email := c.surgesh.Whoami(); email == "" {
 				fmt.Println("<YOU ARE NOT LOGGED IN>")
