@@ -46,5 +46,5 @@ cd surgecli
 go build surgecli.go
 
 # build for linux
-CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build *.go
+CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build surgecli.go
 ```

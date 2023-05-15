@@ -24,6 +24,17 @@ func isDir(f string) bool {
 	}
 }
 
+// src 必须为绝对路径！故返回值也是绝对路径
+// 返回一个目录的父目录，正斜线分隔路径
+// 例如：/a/b 返回 /a，/a/b/ 返回 /a
+func toParent(src string) string {
+	const SEP = string(filepath.Separator)
+	p := src + SEP
+	p = filepath.Dir(p)
+	p = filepath.Dir(p)
+	return filepath.ToSlash(p) + "/"
+}
+
 // client =  &http.Client{}
 // domain = domainplaceholder.surge.sh
 // src = <the directory path>
@@ -32,8 +43,11 @@ func Upload(client *http.Client, token, domain, src string, onEventStream func(b
 	if !isDir(src) {
 		return errors.New("not a directory")
 	}
-	// 获取绝对路径，保证tar是压缩了一个文件夹而不是其内容
-	src, err = filepath.Abs(src)
+	// 获取绝对路径，保证tar是压缩了一个文件夹而不是其内容（当src为当前目录时）
+	src, _ = filepath.Abs(src)
+	// 获取src的父目录路径，写入tar时用绝对路径删除此前缀
+	parentSrc := toParent(src)
+
 	if err != nil {
 		return err
 	}
@@ -90,7 +104,14 @@ func Upload(client *http.Client, token, domain, src string, onEventStream func(b
 			return err
 		}
 
-		hdr.Name = strings.TrimPrefix(unixPath, string(filepath.Separator))
+		// 写入文件名：dir是一级根目录
+		name, cut := strings.CutPrefix(unixPath, parentSrc)
+		hdr.Name = strings.TrimPrefix(name, string(filepath.Separator))
+		if !cut {
+			// 正常情况下必定能够移除父目录的路径，否则panic
+			panic(fmt.Sprintf("path=%s parentPath=%s", unixPath, parentSrc))
+			// TODO:应该有更好的方法来移除父目录路径
+		}
 
 		// 写入文件信息
 		if err := tw.WriteHeader(hdr); err != nil {
