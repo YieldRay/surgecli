@@ -13,14 +13,23 @@ import (
 )
 
 func (c *privateSurgeCLI) UploadCommand() *cli.Command {
+	var isCNAME int
+
 	return &cli.Command{
 		Name:      "upload",
 		Aliases:   []string{"deploy"},
 		Usage:     "Upload a directory (a.k.a. deploy a project) to surge.sh",
 		ArgsUsage: "<path_to_dir> <domain>",
+		Flags: []cli.Flag{
+			&cli.BoolFlag{
+				Name:    "CNAME",
+				Aliases: []string{"cname"},
+				Usage:   "write the domain to CNAME file",
+				Count:   &isCNAME,
+			}},
 		Action: func(cCtx *cli.Context) error {
 			if email := c.surgesh.Whoami(); email == "" {
-				fmt.Println("<YOU ARE NOT LOGGED IN>")
+				fmt.Print("<YOU ARE NOT LOGGED IN>")
 				return nil
 			}
 
@@ -30,9 +39,8 @@ func (c *privateSurgeCLI) UploadCommand() *cli.Command {
 				fmt.Println("Usage: surgecli upload <path_to_dir> <domain>")
 				fmt.Println()
 				fmt.Println(`Use "<CUSTOM_SUBDOMAIN>.surge.sh" if you do not have your own domain`)
-				fmt.Println("To setup custom domain, see ")
-				fmt.Println("https://surge.world/")
-				fmt.Println("https://surge.sh/help/adding-a-custom-domain")
+				fmt.Println("To setup custom domain, see")
+				fmt.Print("https://surge.world/ \nhttps://surge.sh/help/adding-a-custom-domain")
 				return nil
 			} else {
 				if !isDir(dir) {
@@ -41,9 +49,10 @@ func (c *privateSurgeCLI) UploadCommand() *cli.Command {
 			}
 
 			domain := cCtx.Args().Get(1)
+			cnameFilePath := path.Join(dir, "CNAME")
 
 			if domain == "" {
-				b, _ := os.ReadFile(path.Join(dir, "CNAME"))
+				b, _ := os.ReadFile(cnameFilePath)
 				domain = strings.Trim(string(b), " ")
 			}
 
@@ -52,39 +61,25 @@ func (c *privateSurgeCLI) UploadCommand() *cli.Command {
 				fmt.Println()
 				absPath, _ := filepath.Abs(dir)
 				fmt.Println("You are going to upload local directory: ", absPath)
-				fmt.Println("You have NOT specify a domain, please enter a domain")
-				fmt.Println(`Use "<CUSTOM_SUBDOMAIN>.surge.sh" if you do not have your own domain`)
-				fmt.Println("To setup custom domain, see https://surge.sh/help/adding-a-custom-domain")
-				fmt.Println()
-				fmt.Print("Please Enter Your Domain (Ctrl+C To Quit): ")
-				fmt.Scanf("%s\n", &domain)
-				if len(domain) < 3 {
-					return fmt.Errorf("domain is invalid")
-				}
-
-				cnameFilePath := path.Join(dir, "CNAME")
-				fmt.Println()
-				fmt.Printf("Do you want to write the domain to %s file?\n", cnameFilePath)
-				fmt.Print("This will allow the cli to remember that domain (yes/no): ")
-				confirmText := ""
-				fmt.Scanf("%s\n", &confirmText)
-				if confirmText == "yes" {
-					os.WriteFile(cnameFilePath, []byte(domain), 0666)
-				}
+				fmt.Printf("You haven't specify a domain and the %s file does not provide a domain", cnameFilePath)
+				return nil
 			}
 
-			fmt.Println()
-			return c.surgesh.Upload(domain, dir, onUploadEvent)
+			if err := c.surgesh.Upload(domain, dir, onUploadEvent); err != nil {
+				return err
+			} else {
+				if isCNAME > 0 {
+					return os.WriteFile(cnameFilePath, []byte(domain), 0666)
+				}
+				return nil
+			}
 		},
 	}
 }
 
 func isDir(f string) bool {
-	if fi, err := os.Stat(f); err != nil {
-		return false
-	} else {
-		return fi.IsDir()
-	}
+	fi, err := os.Stat(f)
+	return !os.IsNotExist(err) && fi.IsDir()
 }
 
 func onUploadEvent(byteLine []byte) {

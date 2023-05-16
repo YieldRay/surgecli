@@ -16,13 +16,13 @@ func (c *privateSurgeCLI) LoginCommand() *cli.Command {
 			password := cCtx.Args().Get(1)
 
 			if password == "" {
-				fmt.Println("Usage: surgecli login <username> <password>")
+				fmt.Print("Usage: surgecli login <username> <password>")
 				return nil
 			}
 
 			email, err := c.surgesh.Login(username, password)
 			if err == nil {
-				fmt.Printf("Login Success as %s\n", email)
+				fmt.Printf("Login Success as %s", email)
 			}
 			return err
 		},

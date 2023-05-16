@@ -14,7 +14,7 @@ func (c *privateSurgeCLI) TeardownCommand() *cli.Command {
 		ArgsUsage: "<domain>",
 		Action: func(cCtx *cli.Context) error {
 			if email := c.surgesh.Whoami(); email == "" {
-				fmt.Println("<YOU ARE NOT LOGGED IN>")
+				fmt.Print("<YOU ARE NOT LOGGED IN>")
 				return nil
 			}
 
@@ -22,7 +22,7 @@ func (c *privateSurgeCLI) TeardownCommand() *cli.Command {
 
 			if domain == "" {
 				fmt.Println("Usage: surgecli teardown <domain>")
-				fmt.Println("Please specify a domain to teardown")
+				fmt.Print("Please specify a domain to teardown")
 				return nil
 			}
 
