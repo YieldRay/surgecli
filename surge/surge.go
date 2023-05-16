@@ -30,6 +30,7 @@ func New() *Surge {
 	surge := &Surge{}
 	surge.httpClient = http.DefaultClient
 
+	// load email and token from .netrc file
 	email, token, _ := api.ReadNetrc()
 
 	surge.email = email

@@ -12,28 +12,20 @@ func main() {
 	surgeCLI := surgecli.SurgeCLI
 
 	app := &cli.App{
-		Name:  "surgecli",
-		Usage: "thrid party surge.sh cli",
-		Commands: []*cli.Command{
-			surgeCLI.LoginCommand(),
-			surgeCLI.LogoutCommand(),
-			surgeCLI.WhoamiCommand(),
-			surgeCLI.AccountCommand(),
-			surgeCLI.ListCommand(),
-			surgeCLI.TeardownCommand(),
-			surgeCLI.UploadCommand(),
-		},
+		Name:     "surgecli",
+		Usage:    "thrid party surge.sh cli",
+		Commands: surgeCLI.Commands(),
 		Flags: []cli.Flag{
+			&cli.BoolFlag{
+				Name:  "debug",
+				Usage: "toggle debug on",
+				Count: &surgeCLI.DEBUG,
+			},
 			&cli.StringFlag{
 				Name:        "api",
 				Value:       "https://surge.surge.sh",
 				Usage:       "configure the API host",
 				Destination: &surgeCLI.API_HOST,
-			},
-			&cli.BoolFlag{
-				Name:  "debug",
-				Usage: "toggle debug on",
-				Count: &surgeCLI.DEBUG,
 			},
 		},
 	}

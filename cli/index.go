@@ -6,12 +6,14 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"net/url"
+	"reflect"
 	"strings"
 
+	"github.com/urfave/cli/v2"
 	"github.com/yieldray/surgecli/surge"
 )
 
-type privateSurgeCLI struct { // 单例模式
+type privateSurgeCLI struct { // 单例模式，此结构体仅实现一次
 	surgesh  *surge.Surge
 	API_HOST string
 	DEBUG    int
@@ -61,10 +63,28 @@ func (tsc transport) RoundTrip(req *http.Request) (*http.Response, error) {
 
 func init() {
 	surgesh := surge.New()
+
 	surgesh.SetHTTPClient(&http.Client{Transport: &transport{}})
 	SurgeCLI = &privateSurgeCLI{
 		surgesh:  surgesh,
 		API_HOST: "",
 		DEBUG:    0,
 	}
+}
+
+
+// 通过反射获取命令配置数组
+func (surgecli *privateSurgeCLI) Commands() []*cli.Command {
+	cmds := []*cli.Command{}
+
+	t := reflect.TypeOf(surgecli)
+
+	for i := 0; i < t.NumMethod(); i++ {
+		m := t.Method(i)
+		if createCommandFunc, ok := m.Func.Interface().(func(c *privateSurgeCLI) *cli.Command); ok {
+			cmds = append(cmds, createCommandFunc(surgecli))
+		}
+	}
+
+	return cmds
 }

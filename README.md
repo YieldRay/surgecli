@@ -23,18 +23,19 @@ USAGE:
    surgecli [global options] command [command options] [arguments...]
 
 COMMANDS:
+   account         Show account information
+   fetch-token     Fetch token by email and password, but do not save the token like login command
+   list            List my sites
    login           Login (or create new account) to surge.sh
    logout          Logout from surge.sh
-   whoami          Show my email
-   account         Show account information
-   list            List my sites
    teardown        Delete site from surge.sh
    upload, deploy  Upload a directory (a.k.a. deploy a project) to surge.sh
+   whoami          Show my email
    help, h         Shows a list of commands or help for one command
 
 GLOBAL OPTIONS:
-   --api value  configure the API host (default: "https://surge.surge.sh")
    --debug      toggle debug on (default: false)
+   --api value  configure the API host (default: "https://surge.surge.sh")
    --help, -h   show help
 ```
 
