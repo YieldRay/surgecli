@@ -3,11 +3,10 @@ package cli
 import (
 	"encoding/json"
 	"fmt"
-	"math/rand"
 	"os"
 	"path"
+	"path/filepath"
 	"strings"
-	"time"
 
 	"github.com/urfave/cli/v2"
 	"github.com/yieldray/surgecli/types"
@@ -28,9 +27,12 @@ func (c *privateSurgeCLI) UploadCommand() *cli.Command {
 			dir := cCtx.Args().Get(0)
 
 			if dir == "" {
-				fmt.Println(`Usage: surgecli upload <path_to_dir> <domain>`)
-				fmt.Println(`use "<CUSTOM_SUB_DOMAIN>.surge.sh" if you do not have a domain`)
-				fmt.Println("to setup custom domain, see https://surge.sh/help/adding-a-custom-domain")
+				fmt.Println("Usage: surgecli upload <path_to_dir> <domain>")
+				fmt.Println()
+				fmt.Println(`Use "<CUSTOM_SUBDOMAIN>.surge.sh" if you do not have your own domain`)
+				fmt.Println("To setup custom domain, see ")
+				fmt.Println("https://surge.world/")
+				fmt.Println("https://surge.sh/help/adding-a-custom-domain")
 				return nil
 			} else {
 				if !isDir(dir) {
@@ -46,22 +48,27 @@ func (c *privateSurgeCLI) UploadCommand() *cli.Command {
 			}
 
 			if domain == "" {
-				fmt.Println(`Usage: surgecli upload <path_to_dir> <domain>`)
-				fmt.Println("\nAs you have not specify a domain, generated a random domain for you")
-				domain = fmt.Sprintf("%s.surge.sh", randomString(16))
-				fmt.Printf("[%s] Accept it? (yes/no)  ", domain)
-				confirmText1 := ""
-				fmt.Scanf("%s\n", &confirmText1)
-				if confirmText1 != "yes" {
-					fmt.Println("\nAborted")
-					return nil
+				fmt.Println("Usage: surgecli upload <path_to_dir> <domain>")
+				fmt.Println()
+				absPath, _ := filepath.Abs(dir)
+				fmt.Println("You are going to upload local directory: ", absPath)
+				fmt.Println("You have NOT specify a domain, please enter a domain")
+				fmt.Println(`Use "<CUSTOM_SUBDOMAIN>.surge.sh" if you do not have your own domain`)
+				fmt.Println("To setup custom domain, see https://surge.sh/help/adding-a-custom-domain")
+				fmt.Println()
+				fmt.Print("Please Enter Your Domain (Ctrl+C To Quit): ")
+				fmt.Scanf("%s\n", &domain)
+				if len(domain) < 3 {
+					return fmt.Errorf("domain is invalid")
 				}
+
 				cnameFilePath := path.Join(dir, "CNAME")
-				fmt.Printf("Do you want write the domain to %s file?\n", cnameFilePath)
-				fmt.Print("This will allow the cli to remember that domain  (yes/no)  ")
-				confirmText2 := ""
-				fmt.Scanf("%s\n", &confirmText2)
-				if confirmText2 == "yes" {
+				fmt.Println()
+				fmt.Printf("Do you want to write the domain to %s file?\n", cnameFilePath)
+				fmt.Print("This will allow the cli to remember that domain (yes/no): ")
+				confirmText := ""
+				fmt.Scanf("%s\n", &confirmText)
+				if confirmText == "yes" {
 					os.WriteFile(cnameFilePath, []byte(domain), 0666)
 				}
 			}
@@ -80,16 +87,6 @@ func isDir(f string) bool {
 	}
 }
 
-func randomString(n int) string {
-	const letters = "abcdefghijklmnopqrstuvwxyz"
-	bytes := make([]byte, n)
-	r := rand.New(rand.NewSource(time.Now().UnixNano()))
-	for i := 0; i < n; i++ {
-		bytes[i] = letters[r.Intn(len(letters))]
-	}
-	return string(bytes)
-}
-
 func onUploadEvent(byteLine []byte) {
 	if len(byteLine) == 0 {
 		return
@@ -98,8 +95,7 @@ func onUploadEvent(byteLine []byte) {
 	m := make(map[string]any)
 	json.Unmarshal(byteLine, &m)
 
-	t := m["type"].(string)
-	switch t {
+	switch m["type"].(string) {
 	case "progress":
 		{
 			p := types.OnUploadProgress{}

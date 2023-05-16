@@ -7,9 +7,17 @@ import (
 )
 
 func (c *privateSurgeCLI) ListCommand() *cli.Command {
+	var isShort int
+
 	return &cli.Command{
 		Name:  "list",
 		Usage: "List my sites",
+		Flags: []cli.Flag{
+			&cli.BoolFlag{
+				Name:  "short",
+				Usage: "Only print domain list",
+				Count: &isShort,
+			}},
 		Action: func(cCtx *cli.Context) error {
 			if email := c.surgesh.Whoami(); email == "" {
 				fmt.Println("<YOU ARE NOT LOGGED IN>")
@@ -19,6 +27,15 @@ func (c *privateSurgeCLI) ListCommand() *cli.Command {
 			if list, err := c.surgesh.List(); err != nil {
 				return err
 			} else {
+
+				// only print domain
+				if isShort > 0 {
+					for _, site := range list {
+						fmt.Println(site.Domain)
+					}
+					return nil
+				}
+
 				for _, site := range list {
 					fmt.Printf("%-40s [%s]\n", site.Domain, site.TimeAgoInWords)
 					fmt.Printf("%-7s: https://%s\n", "URL", site.Domain)

@@ -9,6 +9,7 @@ import (
 func (c *privateSurgeCLI) TeardownCommand() *cli.Command {
 	return &cli.Command{
 		Name:      "teardown",
+		Aliases:   []string{"delete"},
 		Usage:     "Delete site from surge.sh",
 		ArgsUsage: "<domain>",
 		Action: func(cCtx *cli.Context) error {
@@ -21,7 +22,7 @@ func (c *privateSurgeCLI) TeardownCommand() *cli.Command {
 
 			if domain == "" {
 				fmt.Println("Usage: surgecli teardown <domain>")
-				fmt.Println("please specify a domain to teardown")
+				fmt.Println("Please specify a domain to teardown")
 				return nil
 			}
 

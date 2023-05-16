@@ -18,7 +18,7 @@ func (c *privateSurgeCLI) FetchTokenCommand() *cli.Command {
 		Flags: []cli.Flag{
 			&cli.BoolFlag{
 				Name:  "local",
-				Usage: "only print token from ~/.netrc file, rather than login to server",
+				Usage: "Only print token from ~/.netrc file, rather than login to server",
 				Count: &isLocal,
 			}},
 		Action: func(cCtx *cli.Context) error {
