@@ -12,9 +12,9 @@ func (c *privateSurgeCLI) WhoamiCommand() *cli.Command {
 		Usage: "Show my email",
 		Action: func(cCtx *cli.Context) error {
 			if email := c.surgesh.Whoami(); email == "" {
-				fmt.Print("<YOU ARE NOT LOGGED IN>")
+				fmt.Println("<YOU ARE NOT LOGGED IN>")
 			} else {
-				fmt.Print(email)
+				fmt.Println(email)
 			}
 			return nil
 		},

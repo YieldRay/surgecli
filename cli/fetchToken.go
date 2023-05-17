@@ -28,7 +28,7 @@ func (c *privateSurgeCLI) FetchTokenCommand() *cli.Command {
 				if _, token, err := api.ReadNetrc(); err != nil {
 					return err
 				} else {
-					fmt.Print(token)
+					fmt.Println(token)
 					return nil
 				}
 			}
@@ -38,14 +38,14 @@ func (c *privateSurgeCLI) FetchTokenCommand() *cli.Command {
 			password := cCtx.Args().Get(1)
 
 			if password == "" {
-				fmt.Print("Usage: surgecli fetch-token <username> <password>")
+				fmt.Println("Usage: surgecli fetch-token <username> <password>")
 				return nil
 			}
 
 			if tokens, err := api.Token(http.DefaultClient, username, password); err != nil {
 				return err
 			} else {
-				fmt.Print(tokens.Token)
+				fmt.Println(tokens.Token)
 				return nil
 			}
 

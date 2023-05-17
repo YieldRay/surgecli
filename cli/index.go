@@ -13,24 +13,24 @@ import (
 	"github.com/yieldray/surgecli/surge"
 )
 
-type privateSurgeCLI struct { // 单例模式，此结构体仅实现一次
+type privateSurgeCLI struct { // Singleton, only create once
 	surgesh  *surge.Surge
 	API_HOST string
 	DEBUG    int
 }
 
-var SurgeCLI *privateSurgeCLI // 单例模式
+var SurgeCLI *privateSurgeCLI // Singleton instance
 
-type transport struct { // 自定义http客户端所需
+type transport struct { // only for *http.client
 }
 
 func (tsc transport) RoundTrip(req *http.Request) (*http.Response, error) {
-	// 若 SurgeCLI.DEBUG > 0 开启 DEBUG，则打印 http 请求及响应
+	// debug http
 	if SurgeCLI.DEBUG > 0 {
 		log.Printf("API_HOST = %s\n", SurgeCLI.API_HOST)
 	}
 
-	// 替换为命令行参数的API
+	// replace api host
 	if u, e := url.Parse(strings.Replace(req.URL.String(), "https://surge.surge.sh", SurgeCLI.API_HOST, 1)); e != nil {
 		fmt.Println(e)
 	} else {
@@ -38,6 +38,7 @@ func (tsc transport) RoundTrip(req *http.Request) (*http.Response, error) {
 		req.Host = u.Host
 	}
 
+	// debug http request
 	if SurgeCLI.DEBUG > 0 {
 		if b, e := httputil.DumpRequest(req, true); e != nil {
 			log.Fatalln(e)
@@ -46,9 +47,10 @@ func (tsc transport) RoundTrip(req *http.Request) (*http.Response, error) {
 		}
 	}
 
-	// 发送实际请求
+	// send the actual request
 	res, err := http.DefaultClient.Do(req)
 
+	// debug http response
 	if SurgeCLI.DEBUG > 0 {
 		if b, e := httputil.DumpResponse(res, true); e != nil {
 			log.Fatalln(e)
@@ -72,8 +74,7 @@ func init() {
 	}
 }
 
-
-// 通过反射获取命令配置数组
+// use reflect to get all sub commands as a slice
 func (surgecli *privateSurgeCLI) Commands() []*cli.Command {
 	cmds := []*cli.Command{}
 

@@ -2,7 +2,6 @@ package cli
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/urfave/cli/v2"
 )
@@ -21,7 +20,7 @@ func (c *privateSurgeCLI) ListCommand() *cli.Command {
 			}},
 		Action: func(cCtx *cli.Context) error {
 			if email := c.surgesh.Whoami(); email == "" {
-				fmt.Print("<YOU ARE NOT LOGGED IN>")
+				fmt.Println("<YOU ARE NOT LOGGED IN>")
 				return nil
 			}
 
@@ -31,11 +30,9 @@ func (c *privateSurgeCLI) ListCommand() *cli.Command {
 
 				// only print domain
 				if isShort > 0 {
-					domains := make([]string, 0, len(list))
 					for _, site := range list {
-						domains = append(domains, site.Domain)
+						fmt.Println(site.Domain)
 					}
-					fmt.Print(strings.Join(domains, "\n"))
 					return nil
 				}
 

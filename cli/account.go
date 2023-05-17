@@ -24,7 +24,7 @@ func (c *privateSurgeCLI) AccountCommand() *cli.Command {
 			fmt.Printf("%-6s: %s\n", "ID", ac.ID)
 			fmt.Printf("%-6s: %s\n", "UUID", ac.UUID)
 			fmt.Printf("%-6s: %s\n", "Plan", ac.Plan.Name)
-			fmt.Printf("\n[FEATURES]\n%s", strings.Join(ac.Plan.Perks, "\n"))
+			fmt.Printf("\n[FEATURES]\n%s\n", strings.Join(ac.Plan.Perks, "\n"))
 
 			return nil
 		},

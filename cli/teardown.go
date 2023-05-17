@@ -22,7 +22,7 @@ func (c *privateSurgeCLI) TeardownCommand() *cli.Command {
 
 			if domain == "" {
 				fmt.Println("Usage: surgecli teardown <domain>")
-				fmt.Print("Please specify a domain to teardown")
+				fmt.Println("Please specify a domain to teardown")
 				return nil
 			}
 
