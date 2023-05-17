@@ -14,15 +14,9 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
-)
 
-func isDir(f string) bool {
-	if fi, err := os.Stat(f); err != nil {
-		return false
-	} else {
-		return fi.IsDir()
-	}
-}
+	surgeUtils "github.com/yieldray/surgecli/utils"
+)
 
 // src 必须为绝对路径！故返回值也是绝对路径
 // 返回一个目录的父目录，正斜线分隔路径
@@ -40,7 +34,7 @@ func toParent(src string) string {
 // src = <the directory path>
 // onEventStream <jsonString=>void>
 func Upload(client *http.Client, token, domain, src string, onEventStream func(byteLine []byte)) (err error) {
-	if !isDir(src) {
+	if !surgeUtils.IsDir(src) {
 		return errors.New("not a directory")
 	}
 	// 获取绝对路径，保证tar是压缩了一个文件夹而不是其内容（当src为当前目录时）

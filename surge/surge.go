@@ -6,6 +6,7 @@ import (
 
 	"github.com/yieldray/surgecli/api"
 	"github.com/yieldray/surgecli/types"
+	surgeUtils "github.com/yieldray/surgecli/utils"
 )
 
 type Surge struct {
@@ -31,7 +32,7 @@ func New() *Surge {
 	surge.httpClient = http.DefaultClient
 
 	// load email and token from .netrc file
-	email, token, _ := api.ReadNetrc()
+	email, token, _ := surgeUtils.ReadNetrc()
 
 	surge.email = email
 	surge.token = token
@@ -56,7 +57,10 @@ func (surge *Surge) Login(username, password string) (email string, err error) {
 	surge.email = t.Email
 	surge.token = t.Token
 
-	return t.Email, api.WriteNetrc(t.Email, t.Token)
+	// custom config file
+	surgeUtils.ConfAddAccount(t.Email, t.Token)
+
+	return t.Email, surgeUtils.WriteNetrc(t.Email, t.Token)
 }
 
 // logout and clear the `~/.netrc`
@@ -67,7 +71,7 @@ func (surge *Surge) Logout() (email string, err error) {
 		return email, errors.New("not logged-in")
 	}
 
-	if err = api.RemoveNetrc(); err != nil {
+	if err = surgeUtils.RemoveNetrc(); err != nil {
 		return
 	} else {
 		surge.email = ""

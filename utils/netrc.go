@@ -1,11 +1,8 @@
-package api
+package utils
 
 import (
 	"errors"
-	"fmt"
 	"os"
-	"path"
-	"runtime"
 
 	"github.com/bgentry/go-netrc/netrc"
 )
@@ -23,14 +20,7 @@ import (
 var netrcPath string
 
 func init() {
-	if runtime.GOOS == "windows" {
-		home := os.Getenv("USERPROFILE")
-		netrcPath = fmt.Sprintf("%s\\%s", home, ".netrc")
-	} else {
-		home := os.Getenv("HOME")
-		netrcPath = path.Join(home, ".netrc")
-	}
-
+	netrcPath = AtHome(".netrc")
 }
 
 func saveMyNetrc(myNetrc *netrc.Netrc) error {
@@ -57,22 +47,8 @@ func RemoveNetrc() error {
 	}
 }
 
-func isExist(path string) bool {
-	if s, err := os.Stat(path); err != nil {
-		if os.IsExist(err) {
-			return true
-		}
-		if os.IsNotExist(err) {
-			return false
-		}
-		return false
-	} else {
-		return s.Mode().IsRegular()
-	}
-}
-
 func WriteNetrc(login, password string) error {
-	if !isExist(netrcPath) {
+	if !IsFileExist(netrcPath) {
 		// Create .netrc file if not exists
 		os.WriteFile(netrcPath, []byte{}, 0600)
 	}
@@ -102,5 +78,4 @@ func ReadNetrc() (login, password string, err error) {
 			return "", "", errors.New("no existed machine surge.surge.sh")
 		}
 	}
-
 }

@@ -2,10 +2,11 @@ package cli
 
 import (
 	"fmt"
-	"net/http"
+	"os"
 
 	"github.com/urfave/cli/v2"
 	"github.com/yieldray/surgecli/api"
+	surgeUtils "github.com/yieldray/surgecli/utils"
 )
 
 func (c *privateSurgeCLI) FetchTokenCommand() *cli.Command {
@@ -25,7 +26,7 @@ func (c *privateSurgeCLI) FetchTokenCommand() *cli.Command {
 
 			// print local token
 			if isLocal > 0 {
-				if _, token, err := api.ReadNetrc(); err != nil {
+				if _, token, err := surgeUtils.ReadNetrc(); err != nil {
 					return err
 				} else {
 					fmt.Println(token)
@@ -38,11 +39,11 @@ func (c *privateSurgeCLI) FetchTokenCommand() *cli.Command {
 			password := cCtx.Args().Get(1)
 
 			if password == "" {
-				fmt.Println("Usage: surgecli fetch-token <username> <password>")
+				fmt.Printf("Usage: %s fetch-token <username> <password>\n", os.Args[0])
 				return nil
 			}
 
-			if tokens, err := api.Token(http.DefaultClient, username, password); err != nil {
+			if tokens, err := api.Token(CustomHttpClient(), username, password); err != nil {
 				return err
 			} else {
 				fmt.Println(tokens.Token)

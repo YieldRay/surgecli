@@ -21,12 +21,6 @@ func main() {
 				Usage: "toggle debug on",
 				Count: &surgeCLI.DEBUG,
 			},
-			&cli.StringFlag{
-				Name:        "api",
-				Value:       "https://surge.surge.sh",
-				Usage:       "configure the API host",
-				Destination: &surgeCLI.API_HOST,
-			},
 		},
 	}
 

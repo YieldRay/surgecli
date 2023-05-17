@@ -2,6 +2,7 @@ package cli
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/urfave/cli/v2"
 )
@@ -21,7 +22,7 @@ func (c *privateSurgeCLI) TeardownCommand() *cli.Command {
 			domain := cCtx.Args().First()
 
 			if domain == "" {
-				fmt.Println("Usage: surgecli teardown <domain>")
+				fmt.Printf("Usage: %s teardown <domain>\n", os.Args[0])
 				fmt.Println("Please specify a domain to teardown")
 				return nil
 			}

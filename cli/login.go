@@ -2,6 +2,7 @@ package cli
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/urfave/cli/v2"
 )
@@ -16,7 +17,7 @@ func (c *privateSurgeCLI) LoginCommand() *cli.Command {
 			password := cCtx.Args().Get(1)
 
 			if password == "" {
-				fmt.Println("Usage: surgecli login <username> <password>")
+				fmt.Printf("Usage: %s login <username> <password>\n", os.Args[0])
 				return nil
 			}
 

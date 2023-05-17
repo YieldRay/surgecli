@@ -36,9 +36,8 @@ func (c *privateSurgeCLI) UploadCommand() *cli.Command {
 			dir := cCtx.Args().Get(0)
 
 			if dir == "" {
-				fmt.Println("Usage: surgecli upload <path_to_dir> <domain>")
-				fmt.Println()
-				fmt.Println(`Use "<CUSTOM_SUBDOMAIN>.surge.sh" if you do not have your own domain`)
+				fmt.Printf("Usage: %s upload <path_to_dir> <domain>\n\n", os.Args[0])
+				fmt.Println(`Use "<CUSTOM-SUBDOMAIN>.surge.sh" if you do not have your own domain`)
 				fmt.Println("To setup custom domain, see")
 				fmt.Print("https://surge.world/ \nhttps://surge.sh/help/adding-a-custom-domain")
 				return nil
@@ -57,8 +56,7 @@ func (c *privateSurgeCLI) UploadCommand() *cli.Command {
 			}
 
 			if domain == "" {
-				fmt.Println("Usage: surgecli upload <path_to_dir> <domain>")
-				fmt.Println()
+				fmt.Printf("Usage: %s upload <path_to_dir> <domain>\n\n", os.Args[0])
 				absPath, _ := filepath.Abs(dir)
 				fmt.Println("You are going to upload local directory: ", absPath)
 				fmt.Printf("You haven't specify a domain and the %s file does not provide a domain\n", cnameFilePath)

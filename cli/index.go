@@ -11,12 +11,12 @@ import (
 
 	"github.com/urfave/cli/v2"
 	"github.com/yieldray/surgecli/surge"
+	surgeUtils "github.com/yieldray/surgecli/utils"
 )
 
 type privateSurgeCLI struct { // Singleton, only create once
-	surgesh  *surge.Surge
-	API_HOST string
-	DEBUG    int
+	surgesh *surge.Surge
+	DEBUG   int
 }
 
 var SurgeCLI *privateSurgeCLI // Singleton instance
@@ -25,13 +25,14 @@ type transport struct { // only for *http.client
 }
 
 func (tsc transport) RoundTrip(req *http.Request) (*http.Response, error) {
+	API_HOST := surgeUtils.ConfGetApi()
 	// debug http
 	if SurgeCLI.DEBUG > 0 {
-		log.Printf("API_HOST = %s\n", SurgeCLI.API_HOST)
+		log.Printf("API_HOST = %s\n", API_HOST)
 	}
 
 	// replace api host
-	if u, e := url.Parse(strings.Replace(req.URL.String(), "https://surge.surge.sh", SurgeCLI.API_HOST, 1)); e != nil {
+	if u, e := url.Parse(strings.Replace(req.URL.String(), "https://surge.surge.sh", API_HOST, 1)); e != nil {
 		fmt.Println(e)
 	} else {
 		req.URL = u
@@ -63,14 +64,24 @@ func (tsc transport) RoundTrip(req *http.Request) (*http.Response, error) {
 	return res, err
 }
 
+// the only http client for all http request
+var customHttpClient *http.Client
+
+func init() {
+	customHttpClient = &http.Client{Transport: &transport{}}
+}
+
+// customHttpClient is readonly, so wrap it by a function
+func CustomHttpClient() *http.Client {
+	return customHttpClient
+}
+
 func init() {
 	surgesh := surge.New()
-
-	surgesh.SetHTTPClient(&http.Client{Transport: &transport{}})
+	surgesh.SetHTTPClient(customHttpClient)
 	SurgeCLI = &privateSurgeCLI{
-		surgesh:  surgesh,
-		API_HOST: "",
-		DEBUG:    0,
+		surgesh: surgesh,
+		DEBUG:   0,
 	}
 }
 
