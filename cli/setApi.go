@@ -15,13 +15,19 @@ func (c *privateSurgeCLI) ProxyCommand() *cli.Command {
 		ArgsUsage: "<host>",
 		Action: func(cCtx *cli.Context) error {
 			api := cCtx.Args().First()
+			prevApi := surgeUtils.ConfGetApi()
 			if len(api) == 0 {
 				fmt.Printf("e.g.  %s set-api https://surge.surge.sh\n", os.Args[0])
+				fmt.Printf("The previous api host is %s\n", prevApi)
+				fmt.Println("Your api host has been reset to the official api host")
+				return nil
 			}
+
 			if err := surgeUtils.ConfSetApi(api); err != nil {
 				return err
 			} else {
-				fmt.Println("Your api host has been reset to the official host")
+				fmt.Printf("The previous api host is %s\n", prevApi)
+				fmt.Printf("Your api host has been set to %s\n", api)
 				return nil
 			}
 		},

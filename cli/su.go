@@ -22,10 +22,12 @@ func (c *privateSurgeCLI) SuCommand() *cli.Command {
 				if len(emails) == 0 {
 					fmt.Println("there is no user stored in config file")
 				} else {
-					fmt.Printf("email list:\n")
+					fmt.Printf("[email list]\n")
 					fmt.Println(strings.Join(emails, "\n"))
 				}
+				return nil
 			}
+
 			if err := surgeUtils.ConfUseEmail(email); err != nil {
 				return err
 			} else {
