@@ -79,6 +79,6 @@ func ConfUseEmail(email string) error {
 	if ok {
 		return WriteNetrc(email, token)
 	} else {
-		return fmt.Errorf("email %s is not in the configure email list", email)
+		return fmt.Errorf("email %s is not in the email list read from config file", email)
 	}
 }

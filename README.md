@@ -23,20 +23,21 @@ USAGE:
    surgecli [global options] command [command options] [arguments...]
 
 COMMANDS:
-   account         Show account information
-   fetch-token     Fetch token by email and password, but do not save the token like login command
-   list            List my sites
-   login           Login (or create new account) to surge.sh
-   logout          Logout from surge.sh
-   teardown        Delete site from surge.sh
-   upload, deploy  Upload a directory (a.k.a. deploy a project) to surge.sh
-   whoami          Show my email
-   help, h         Shows a list of commands or help for one command
+   account           Show account information
+   fetch-token       Fetch token by email and password, but do not save the token like login command
+   list              List my sites
+   login             Login (or create new account) to surge.sh
+   logout            Logout from surge.sh
+   api               Print or set api host, the official host is https://surge.surge.sh
+   su                Switch user
+   teardown, delete  Delete site from surge.sh
+   upload, deploy    Upload a directory (a.k.a. deploy a project) to surge.sh
+   whoami            Show my email
+   help, h           Shows a list of commands or help for one command
 
 GLOBAL OPTIONS:
-   --debug      toggle debug on (default: false)
-   --api value  configure the API host (default: "https://surge.surge.sh")
-   --help, -h   show help
+   --debug     toggle debug on (default: false)
+   --help, -h  show help
 ```
 
 ## build
@@ -44,8 +45,8 @@ GLOBAL OPTIONS:
 ```sh
 git clone https://github.com/YieldRay/surgecli.git
 cd surgecli
-go build surgecli.go
+go build -ldflags="-s -w" surgecli.go
 
 # build for linux
-CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build surgecli.go
+CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" surgecli.go
 ```
