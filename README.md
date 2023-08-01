@@ -5,6 +5,8 @@ currently, `.surgeignore` file is not fully supported
 
 ## usage
 
+manage your site
+
 ```sh
 surgecli login <username> <password> # skip this if you have already logged in
 
@@ -18,7 +20,23 @@ surgecli list
 surgecli teardown mydomain.example.net
 ```
 
+you may want to upload your site with something like Github Actions, see this
+
+```sh
+# first, fetch token from your local machine
+surgecli fetch-token <username> <password>
+# for another machine, set environment variable
+export SURGECLI_TOKEN=<your_token>
+# use other command that require token without login
+surgecli upload --silent . mysite.surge.sh
 ```
+
+command help
+
+```
+NAME:
+   surgecli - thrid party surge.sh cli
+
 USAGE:
    surgecli [global options] command [command options] [arguments...]
 

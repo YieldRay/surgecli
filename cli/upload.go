@@ -14,6 +14,7 @@ import (
 
 func (c *privateSurgeCLI) UploadCommand() *cli.Command {
 	var isCNAME int
+	var isSilent int
 
 	return &cli.Command{
 		Name:      "upload",
@@ -26,6 +27,10 @@ func (c *privateSurgeCLI) UploadCommand() *cli.Command {
 				Aliases: []string{"cname"},
 				Usage:   "write the domain to CNAME file",
 				Count:   &isCNAME,
+			}, &cli.BoolFlag{
+				Name:  "silent",
+				Usage: "do not print the uploading info, only print the result",
+				Count: &isSilent,
 			}},
 		Action: func(cCtx *cli.Context) error {
 			if email := c.surgesh.Whoami(); email == "" {
@@ -63,7 +68,9 @@ func (c *privateSurgeCLI) UploadCommand() *cli.Command {
 				return nil
 			}
 
-			if err := c.surgesh.Upload(domain, dir, onUploadEvent); err != nil {
+			if err := c.surgesh.Upload(domain, dir, func(byteLine []byte) {
+				onUploadEvent(byteLine, isSilent > 0)
+			}); err != nil {
 				return err
 			} else {
 				if isCNAME > 0 {
@@ -80,7 +87,7 @@ func isDir(f string) bool {
 	return !os.IsNotExist(err) && fi.IsDir()
 }
 
-func onUploadEvent(byteLine []byte) {
+func onUploadEvent(byteLine []byte, isSilent bool) {
 	if len(byteLine) == 0 {
 		return
 	}
@@ -88,6 +95,25 @@ func onUploadEvent(byteLine []byte) {
 	m := make(map[string]any)
 	json.Unmarshal(byteLine, &m)
 
+	// print the result info
+	handleInfo := func() {
+		p := types.OnUploadInfo{}
+		json.Unmarshal(byteLine, &p)
+
+		for _, url := range p.Urls {
+			fmt.Printf("[%-12s]\nhttps://%s\n", url.Name, url.Domain)
+		}
+	}
+
+	// silent mode, fast return
+	if isSilent {
+		if m["type"].(string) == "info" {
+			handleInfo()
+		}
+		return
+	}
+
+	// not silent, print upload progress info
 	switch m["type"].(string) {
 	case "progress":
 		{
@@ -113,13 +139,7 @@ func onUploadEvent(byteLine []byte) {
 		}
 	case "info":
 		{
-			p := types.OnUploadInfo{}
-			json.Unmarshal(byteLine, &p)
-
-			for _, url := range p.Urls {
-				fmt.Printf("[%-12s]\nhttps://%s\n", url.Name, url.Domain)
-			}
-
+			handleInfo()
 		}
 	}
 }

@@ -3,6 +3,7 @@ package surge
 import (
 	"errors"
 	"net/http"
+	"os"
 
 	"github.com/yieldray/surgecli/api"
 	"github.com/yieldray/surgecli/types"
@@ -31,11 +32,16 @@ func New() *Surge {
 	surge := &Surge{}
 	surge.httpClient = http.DefaultClient
 
-	// load email and token from .netrc file
-	email, token, _ := surgeUtils.ReadNetrc()
-
-	surge.email = email
-	surge.token = token
+	if token := os.Getenv("SURGECLI_TOKEN"); token != "" {
+		// try to load token from environment variables
+		surge.email = `<no local email, use "surgecli account" to check from remote!>`
+		surge.token = token
+	} else {
+		// try to load email and token from .netrc file
+		email, token, _ := surgeUtils.ReadNetrc()
+		surge.email = email
+		surge.token = token
+	}
 
 	return surge
 }
