@@ -65,6 +65,8 @@ git clone https://github.com/YieldRay/surgecli.git
 cd surgecli
 go build -ldflags="-s -w" surgecli.go
 
-# build for linux
-CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" surgecli.go
+# cross platform
+CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o dist/surgecli-linux-amd64 -ldflags="-s -w" surgecli.go
+CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -o dist/surgecli-darwin-amd64 -ldflags="-s -w" surgecli.go
+CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -o dist/surgecli-windows-amd64.exe -ldflags="-s -w" surgecli.go
 ```
