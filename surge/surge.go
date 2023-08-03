@@ -32,10 +32,14 @@ func New() *Surge {
 	surge := &Surge{}
 	surge.httpClient = http.DefaultClient
 
-	if token := os.Getenv("SURGECLI_TOKEN"); token != "" {
+	if token := os.Getenv("SURGE_TOKEN"); token != "" {
 		// try to load token from environment variables
 		surge.email = `<no local email, use "surgecli account" to check from remote!>`
 		surge.token = token
+		// this step is actually use less, but is compatiable with official surge client
+		if login := os.Getenv("SURGE_LOGIN"); login != "" {
+			surge.email = login
+		}
 	} else {
 		// try to load email and token from .netrc file
 		email, token, _ := surgeUtils.ReadNetrc()

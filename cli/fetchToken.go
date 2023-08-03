@@ -39,7 +39,8 @@ func (c *privateSurgeCLI) FetchTokenCommand() *cli.Command {
 			password := cCtx.Args().Get(1)
 
 			if password == "" {
-				fmt.Printf("Usage: %s fetch-token <username> <password>\n", os.Args[0])
+				fmt.Printf("Usage: \n%s fetch-token <username> <password> \n%s fetch token --local\n",
+					os.Args[0], os.Args[0])
 				return nil
 			}
 
