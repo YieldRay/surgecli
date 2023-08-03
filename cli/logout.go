@@ -13,14 +13,15 @@ func (c *privateSurgeCLI) LogoutCommand() *cli.Command {
 		Action: func(cCtx *cli.Context) error {
 			if email := c.surgesh.Whoami(); email == "" {
 				fmt.Println("<YOU ARE NOT LOGGED IN>")
-				return nil
+				return fmt.Errorf("unauthorized")
 			}
-			
+
 			email, err := c.surgesh.Logout()
-			if err == nil {
-				fmt.Printf("Logout Success as %s\n", email)
+			if err != nil {
+				return err
 			}
-			return err
+			fmt.Printf("Logout Success as %s\n", email)
+			return nil
 		},
 	}
 }

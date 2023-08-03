@@ -41,7 +41,7 @@ func (c *privateSurgeCLI) FetchTokenCommand() *cli.Command {
 			if password == "" {
 				fmt.Printf("Usage: \n%s fetch-token <username> <password> \n%s fetch token --local\n",
 					os.Args[0], os.Args[0])
-				return nil
+				return fmt.Errorf("command failed")
 			}
 
 			if tokens, err := api.Token(CustomHttpClient(), username, password); err != nil {

@@ -16,7 +16,7 @@ func (c *privateSurgeCLI) TeardownCommand() *cli.Command {
 		Action: func(cCtx *cli.Context) error {
 			if email := c.surgesh.Whoami(); email == "" {
 				fmt.Print("<YOU ARE NOT LOGGED IN>")
-				return nil
+				return fmt.Errorf("unauthorized")
 			}
 
 			domain := cCtx.Args().First()
@@ -24,7 +24,7 @@ func (c *privateSurgeCLI) TeardownCommand() *cli.Command {
 			if domain == "" {
 				fmt.Printf("Usage: %s teardown <domain>\n", os.Args[0])
 				fmt.Println("Please specify a domain to teardown")
-				return nil
+				return fmt.Errorf("command failed")
 			}
 
 			teardown, err := c.surgesh.Teardown(domain)

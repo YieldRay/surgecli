@@ -35,7 +35,7 @@ func (c *privateSurgeCLI) UploadCommand() *cli.Command {
 		Action: func(cCtx *cli.Context) error {
 			if email := c.surgesh.Whoami(); email == "" {
 				fmt.Println("<YOU ARE NOT LOGGED IN>")
-				return nil
+				return fmt.Errorf("unauthorized")
 			}
 
 			dir := cCtx.Args().Get(0)
@@ -65,7 +65,7 @@ func (c *privateSurgeCLI) UploadCommand() *cli.Command {
 				absPath, _ := filepath.Abs(dir)
 				fmt.Println("You are going to upload local directory: ", absPath)
 				fmt.Printf("You haven't specify a domain and the %s file does not provide a domain\n", cnameFilePath)
-				return nil
+				return fmt.Errorf("command failed")
 			}
 
 			if err := c.surgesh.Upload(domain, dir, func(byteLine []byte) {

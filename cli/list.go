@@ -21,7 +21,7 @@ func (c *privateSurgeCLI) ListCommand() *cli.Command {
 		Action: func(cCtx *cli.Context) error {
 			if email := c.surgesh.Whoami(); email == "" {
 				fmt.Println("<YOU ARE NOT LOGGED IN>")
-				return nil
+				return fmt.Errorf("unauthorized")
 			}
 
 			if list, err := c.surgesh.List(); err != nil {

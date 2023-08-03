@@ -18,7 +18,7 @@ func (c *privateSurgeCLI) LoginCommand() *cli.Command {
 
 			if password == "" {
 				fmt.Printf("Usage: %s login <username> <password>\n", os.Args[0])
-				return nil
+				return fmt.Errorf("command failed")
 			}
 
 			email, err := c.surgesh.Login(username, password)

@@ -14,7 +14,7 @@ func (c *privateSurgeCLI) AccountCommand() *cli.Command {
 		Action: func(cCtx *cli.Context) error {
 			if email := c.surgesh.Whoami(); email == "" {
 				fmt.Println("<YOU ARE NOT LOGGED IN>")
-				return nil
+				return fmt.Errorf("unauthorized")
 			}
 			ac, err := c.surgesh.Account()
 			if err != nil {
@@ -25,7 +25,6 @@ func (c *privateSurgeCLI) AccountCommand() *cli.Command {
 			fmt.Printf("%-6s: %s\n", "UUID", ac.UUID)
 			fmt.Printf("%-6s: %s\n", "Plan", ac.Plan.Name)
 			fmt.Printf("\n[FEATURES]\n%s\n", strings.Join(ac.Plan.Perks, "\n"))
-
 			return nil
 		},
 	}
