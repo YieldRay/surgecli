@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
+	"k8s.io/helm/pkg/ignore"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -17,17 +18,6 @@ import (
 
 	surgeUtils "github.com/yieldray/surgecli/utils"
 )
-
-// src 必须为绝对路径！故返回值也是绝对路径
-// 返回一个目录的父目录，正斜线分隔路径
-// 例如：/a/b 返回 /a，/a/b/ 返回 /a
-func toParent(src string) string {
-	const SEP = string(filepath.Separator)
-	p := src + SEP
-	p = filepath.Dir(p)
-	p = filepath.Dir(p)
-	return filepath.ToSlash(p) + "/"
-}
 
 // client =  &http.Client{}
 // domain = domainplaceholder.surge.sh
@@ -39,12 +29,9 @@ func Upload(client *http.Client, token, domain, src string, onEventStream func(b
 	}
 	// 获取绝对路径，保证tar是压缩了一个文件夹而不是其内容（当src为当前目录时）
 	src, _ = filepath.Abs(src)
-	// 获取src的父目录路径，写入tar时用绝对路径删除此前缀
-	parentSrc := toParent(src)
 
-	if err != nil {
-		return err
-	}
+	computeTarPath := computeTarPathFn(src)
+	computeIgnore := computeIgnoreFn(src)
 
 	buf := new(bytes.Buffer)
 	gw := gzip.NewWriter(buf)
@@ -54,31 +41,19 @@ func Upload(client *http.Client, token, domain, src string, onEventStream func(b
 	fileCount = 0
 	projectSize = 0
 
-	ignoreList := surgeIgnore(src)
-
 	err = filepath.Walk(src, func(path string, info fs.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
 
-		// 路径转换为 unix 格式
-		unixPath := filepath.ToSlash(path)
+		tarPath := computeTarPath(path)
+		isIgnore := computeIgnore(path, tarPath)
 
-		// 默认跳过文件夹
-		if info.IsDir() && info.Name() != "." {
-			defaultIgnoreList := []string{".git", ".*", ".*.*~", "node_modules", "bower_components"}
-			for _, pattern := range defaultIgnoreList {
-				matched, _ := filepath.Match(pattern, info.Name())
-				// fmt.Println(info.Name(), pattern, matched)
-				if matched {
-					return filepath.SkipDir
-				}
+		if isIgnore {
+			if info.IsDir() {
+				return filepath.SkipDir // skip entire dir
 			}
-		}
-
-		// 自定义文件跳过
-		if filterForIgnore(ignoreList, unixPath, info) {
-			return nil
+			return nil // skip this file
 		}
 
 		// 不处理非标准文件
@@ -98,14 +73,8 @@ func Upload(client *http.Client, token, domain, src string, onEventStream func(b
 			return err
 		}
 
-		// 写入文件名：dir是一级根目录
-		name, cut := strings.CutPrefix(unixPath, parentSrc)
-		hdr.Name = strings.TrimPrefix(name, string(filepath.Separator))
-		if !cut {
-			// 正常情况下必定能够移除父目录的路径，否则panic
-			panic(fmt.Sprintf("path=%s parentPath=%s", unixPath, parentSrc))
-			// TODO:应该有更好的方法来移除父目录路径
-		}
+		// 写入文件名
+		hdr.Name = tarPath
 
 		// 写入文件信息
 		if err := tw.WriteHeader(hdr); err != nil {
@@ -193,39 +162,47 @@ func Upload(client *http.Client, token, domain, src string, onEventStream func(b
 	return nil
 }
 
-// 读取目录下的 .surgeignore 文件
-func surgeIgnore(src string) []string {
-	ignoreList := []string{}
+func computeTarPathFn(src string) func(path string) string {
+	const SEP = string(filepath.Separator)
+	p := src + SEP
+	p = filepath.Dir(p)
+	p = filepath.Dir(p)
+	p = filepath.ToSlash(p) + "/"
 
-	p := filepath.Join(src, ".surgeignore")
-
-	file, err := os.Open(p)
-	if err != nil {
-		return ignoreList
+	// 移除父路径，仅留下作为tar名称的路径 (Unix格式)
+	return func(filePath string) string {
+		unixPath := filepath.ToSlash(filePath)
+		name, _ := strings.CutPrefix(unixPath, p)
+		return strings.TrimPrefix(name, string(filepath.Separator))
 	}
-	defer file.Close()
-
-	scanner := bufio.NewScanner(file)
-
-	for scanner.Scan() {
-		ignoreList = append(ignoreList, scanner.Text())
-	}
-
-	return ignoreList
 }
 
-// 返回 ture 则被跳过
-func filterForIgnore(ignoreList []string, path string, info fs.FileInfo) bool {
-	if strings.HasPrefix(info.Name(), ".") {
-		return true
-	}
-
-	for _, pattern := range ignoreList {
-		matched, _ := filepath.Match(pattern, info.Name())
-		if matched {
-			return true
+func computeIgnoreFn(src string) func(fullPath, tarPath string) bool {
+	p := filepath.Join(src, ".surgeignore")
+	rules, rulesErr := ignore.ParseFile(p)
+	return func(fullPath, tarPath string) bool {
+		fileInfo, err := os.Stat(fullPath)
+		if err != nil {
+			return true // we can not access the file, so ignore
 		}
-	}
 
-	return false
+		// 这是surge文档规定的默认ingore列表
+		defaultIgnoreList := []string{".git", ".*", ".*.*~", "node_modules", "bower_components"}
+		for _, pattern := range defaultIgnoreList {
+			matched, _ := filepath.Match(pattern, filepath.Base(fullPath))
+			if matched {
+				return true
+			}
+		}
+
+		if rulesErr != nil {
+			return false // rules got error, do not ignore
+		}
+		return rules.Ignore(removeTopParent(tarPath), fileInfo)
+	}
+}
+
+func removeTopParent(path string) string {
+	dir := filepath.Dir(path)
+	return filepath.ToSlash(filepath.Join(filepath.Base(dir), filepath.Base(path)))
 }
