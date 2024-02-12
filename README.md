@@ -9,6 +9,8 @@ Features:
 -   Multi-user support
 -   Friendly for CI environments
 
+For github actions, see [deploy-to-surge-action](https://github.com/YieldRay/deploy-to-surge-action)
+
 ## usage
 
 Manage your site

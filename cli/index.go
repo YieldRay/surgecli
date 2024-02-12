@@ -39,6 +39,7 @@ var httpClient = &http.Client{Transport: utils.RoundTrip(func(req *http.Request)
 		} else {
 			log.Println(string(b))
 		}
+		fmt.Println()
 	}
 
 	// send the actual request

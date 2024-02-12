@@ -70,7 +70,10 @@ func init() {
 					return fmt.Errorf("command failed")
 				}
 
-				fmt.Print("Preparing for upload...")
+				if isSilent == 0 {
+					fmt.Print("Preparing for upload...")
+				}
+
 				if err := surgesh.Upload(domain, dir, func(byteLine []byte) {
 					onUploadEvent(byteLine, isSilent > 0)
 				}); err != nil {

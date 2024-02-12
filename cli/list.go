@@ -55,10 +55,12 @@ func init() {
 					}
 
 					for _, site := range list {
-						fmt.Printf("%-40s [%s]\n", site.Domain, site.TimeAgoInWords)
+						fmt.Println(site.Domain)
 						fmt.Printf("%-7s: https://%s\n", "URL", site.Domain)
 						fmt.Printf("%-7s: https://%s\n", "Preview", site.Preview)
-						fmt.Printf("v%-7s %-11s %s\n", site.CliVersion, s(site.PublicFileCount), utils.FormatBytes(site.PublicTotalSize))
+						fmt.Printf("v%-7s %-24s %-15s\n", site.CliVersion,
+							fmt.Sprintf("%s - %s", s(site.PublicFileCount), utils.FormatBytes(site.PublicTotalSize)),
+							fmt.Sprintf("[%s]", site.TimeAgoInWords))
 						// fmt.Printf("%s - %s\n", time.Unix(site.UploadStartTime/1000, 0), time.Unix(site.UploadEndTime/1000, 0))
 						fmt.Println()
 					}
