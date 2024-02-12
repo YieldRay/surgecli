@@ -9,7 +9,7 @@ import (
 // home directory path
 var home string
 
-func getHome() string {
+func GetHome() string {
 	if runtime.GOOS == "windows" {
 		return os.Getenv("USERPROFILE")
 	} else {
@@ -20,7 +20,7 @@ func getHome() string {
 // given a path, return a file path in HOME directory
 func AtHome(elem ...string) string {
 	if len(home) == 0 {
-		home = getHome()
+		home = GetHome()
 	}
 	e := []string{home}
 	e = append(e, elem...)

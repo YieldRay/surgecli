@@ -29,8 +29,9 @@ func (surge *Surge) SetEmailAndToken(email, token string) {
 // and automatically load emain&token from `~/.netrc`
 // if there is still no token, please call `surge.Login()` to login
 func New() *Surge {
-	surge := &Surge{}
-	surge.httpClient = http.DefaultClient
+	surge := &Surge{
+		httpClient: http.DefaultClient,
+	}
 
 	if token := os.Getenv("SURGE_TOKEN"); token != "" {
 		// try to load token from environment variables

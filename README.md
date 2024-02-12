@@ -1,11 +1,17 @@
 # surgecli
 
-third party [surge.sh](https://surge.sh) cli written in golang  
-currently, `.surgeignore` file is not fully supported
+Third party [surge.sh](https://surge.sh) cli written in golang
+
+Features:
+
+-   Single executable
+-   Compatible with the official CLI
+-   Multi-user support
+-   Friendly for CI environments
 
 ## usage
 
-manage your site
+Manage your site
 
 ```sh
 surgecli login <username> <password> # skip this if you have already logged in
@@ -20,7 +26,7 @@ surgecli list
 surgecli teardown mydomain.example.net
 ```
 
-you may want to upload your site with something like Github Actions, see this
+You may want to upload your site with something like Github Actions, see this
 
 ```sh
 # first, fetch token from your local machine
@@ -33,27 +39,27 @@ export SURGE_TOKEN=<your_token>
 surgecli upload --silent . mysite.surge.sh
 ```
 
-command help
+Command help
 
-```
+```sh
 NAME:
    surgecli - thrid party surge.sh cli
 
 USAGE:
-   surgecli [global options] command [command options] [arguments...]
+   surgecli [global options] command [command options]
 
 COMMANDS:
-   account           Show account information
-   fetch-token       Fetch token by email and password, but do not save the token like login command
-   list              List my sites
-   login             Login (or create new account) to surge.sh
-   logout            Logout from surge.sh
-   api               Print or set api host, the official host is https://surge.surge.sh
-   su                Switch user
-   teardown, delete  Delete site from surge.sh
-   upload, deploy    Upload a directory (a.k.a. deploy a project) to surge.sh
-   whoami            Show my email
-   help, h           Shows a list of commands or help for one command
+   account, me           Show account information
+   api                   Set or Show API base URL, the official one is https://surge.surge.sh
+   fetch-token, token    Fetch token by email and password, but do not save the token like login command
+   list, ls              List my sites
+   login                 Login (or create new account) to surge.sh
+   logout                Logout from surge.sh
+   su                    Switch user
+   teardown, delete, rm  Delete site from current account
+   upload, deploy        Upload a directory (a.k.a. deploy a project) to surge.sh
+   whoami                Show my email
+   help, h               Shows a list of commands or help for one command
 
 GLOBAL OPTIONS:
    --debug     toggle debug on (default: false)

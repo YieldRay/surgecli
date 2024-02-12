@@ -9,17 +9,16 @@ import (
 )
 
 func main() {
-	surgeCLI := surgecli.SurgeCLI
 
 	app := &cli.App{
 		Name:     "surgecli",
 		Usage:    "thrid party surge.sh cli",
-		Commands: surgeCLI.Commands(),
+		Commands: surgecli.Commands,
 		Flags: []cli.Flag{
 			&cli.BoolFlag{
 				Name:  "debug",
 				Usage: "toggle debug on",
-				Count: &surgeCLI.DEBUG,
+				Count: &surgecli.FLAG_DEBUG,
 			},
 		},
 	}

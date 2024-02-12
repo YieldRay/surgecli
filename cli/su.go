@@ -2,49 +2,51 @@ package cli
 
 import (
 	"fmt"
-	"os"
-	"strings"
 
+	"github.com/charmbracelet/huh"
 	"github.com/urfave/cli/v2"
-	surgeUtils "github.com/yieldray/surgecli/utils"
+	"github.com/yieldray/surgecli/utils"
 )
 
-func selectEmail(emails []string, input string) string {
-	for _, email := range emails {
-		if strings.HasPrefix(email, input) {
-			return email
-		}
-	}
-	return input
-}
+func init() {
+	Commands = append(Commands,
+		&cli.Command{
+			Name:      "su",
+			Usage:     "Switch user",
+			ArgsUsage: "[<email>]",
+			Action: func(cCtx *cli.Context) error {
+				email := cCtx.Args().First()
+				emails := utils.ConfGetEmailList()
 
-func (c *privateSurgeCLI) SuCommand() *cli.Command {
-	return &cli.Command{
-		Name:      "su",
-		Usage:     "Switch user",
-		ArgsUsage: "<email>",
-		Action: func(cCtx *cli.Context) error {
-			email := cCtx.Args().First()
-			emails := surgeUtils.ConfGetEmailList()
-			if len(email) == 0 {
-				fmt.Printf("Usage: %s su <email>\n\n", os.Args[0])
 				if len(emails) == 0 {
-					fmt.Println("there is no user stored in config file")
-				} else {
-					fmt.Printf("[email list]\n")
-					fmt.Println(strings.Join(emails, "\n"))
+					return fmt.Errorf("there is no user stored in config file")
 				}
-				return nil
-			}
 
-			// the final selected email address string
-			selection := selectEmail(emails, email)
-			if err := surgeUtils.ConfUseEmail(selection); err != nil {
-				return err
-			} else {
-				fmt.Printf("Switched to user %s\n", selection)
-				return nil
-			}
-		},
-	}
+				if len(email) == 0 {
+					options := make([]huh.Option[string], 0)
+					for _, e := range emails {
+						options = append(options, huh.NewOption(e, e))
+					}
+
+					err := huh.NewSelect[string]().
+						Title("Switch to another account").
+						Value(&email).Options(options...).Run()
+
+					if err != nil {
+						return err
+					}
+				}
+
+				if len(email) == 0 {
+					return fmt.Errorf("command failed")
+				}
+
+				if err := utils.ConfUseEmail(email); err != nil {
+					return err
+				} else {
+					fmt.Printf("Switched to user %s\n", email)
+					return nil
+				}
+			},
+		})
 }

@@ -31,8 +31,8 @@ type Plan struct {
 type OnUploadProgress struct {
 	Type    string `json:"type"`
 	Id      string `json:"id"`
-	Written int    `json:"written"`
-	Total   int    `json:"total"`
+	Written int64    `json:"written"`
+	Total   int64    `json:"total"`
 	File    string `json:"file"`
 	End     bool   `json:"end"`
 }
@@ -126,7 +126,7 @@ type List []struct {
 	IP               string        `json:"ip"`
 	PrivateFileList  []interface{} `json:"privateFileList"`
 	PublicFileCount  int           `json:"publicFileCount"`
-	PublicTotalSize  int           `json:"publicTotalSize"`
+	PublicTotalSize  int64           `json:"publicTotalSize"`
 	PrivateFileCount int           `json:"privateFileCount"`
 	PrivateTotalSize int           `json:"privateTotalSize"`
 	UploadStartTime  int64         `json:"uploadStartTime"`

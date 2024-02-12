@@ -4,28 +4,40 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/charmbracelet/huh/spinner"
 	"github.com/urfave/cli/v2"
+	"github.com/yieldray/surgecli/types"
 )
 
-func (c *privateSurgeCLI) AccountCommand() *cli.Command {
-	return &cli.Command{
-		Name:  "account",
-		Usage: "Show account information",
-		Action: func(cCtx *cli.Context) error {
-			if email := c.surgesh.Whoami(); email == "" {
-				fmt.Println("<YOU ARE NOT LOGGED IN>")
-				return fmt.Errorf("unauthorized")
-			}
-			ac, err := c.surgesh.Account()
-			if err != nil {
-				return err
-			}
-			fmt.Printf("%-6s: %s\n", "Email", ac.Email)
-			fmt.Printf("%-6s: %s\n", "ID", ac.ID)
-			fmt.Printf("%-6s: %s\n", "UUID", ac.UUID)
-			fmt.Printf("%-6s: %s\n", "Plan", ac.Plan.Name)
-			fmt.Printf("\n[FEATURES]\n%s\n", strings.Join(ac.Plan.Perks, "\n"))
-			return nil
-		},
-	}
+func init() {
+	Commands = append(Commands,
+		&cli.Command{
+			Name:    "account",
+			Aliases: []string{"me"},
+			Usage:   "Show account information",
+			Action: func(cCtx *cli.Context) error {
+
+				if email := surgesh.Whoami(); email == "" {
+					fmt.Println("<YOU ARE NOT LOGGED IN>")
+					return fmt.Errorf("unauthorized")
+				}
+
+				var acc types.Account
+				var err error
+				spinner.New().Title("Fetching...").Action(func() {
+					acc, err = surgesh.Account()
+				}).Run()
+
+				if err != nil {
+					return err
+				}
+
+				fmt.Printf("%-6s: %s\n", "Email", acc.Email)
+				fmt.Printf("%-6s: %s\n", "ID", acc.ID)
+				fmt.Printf("%-6s: %s\n", "UUID", acc.UUID)
+				fmt.Printf("%-6s: %s\n", "Plan", acc.Plan.Name)
+				fmt.Printf("\n[FEATURES]\n%s\n", strings.Join(acc.Plan.Perks, "\n"))
+				return nil
+			},
+		})
 }

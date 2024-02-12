@@ -10,81 +10,79 @@ import (
 
 	"github.com/urfave/cli/v2"
 	"github.com/yieldray/surgecli/types"
+	"github.com/yieldray/surgecli/utils"
 )
 
-func (c *privateSurgeCLI) UploadCommand() *cli.Command {
+func init() {
 	var isCNAME int
 	var isSilent int
 
-	return &cli.Command{
-		Name:      "upload",
-		Aliases:   []string{"deploy"},
-		Usage:     "Upload a directory (a.k.a. deploy a project) to surge.sh",
-		ArgsUsage: "<path_to_dir> <domain>",
-		Flags: []cli.Flag{
-			&cli.BoolFlag{
-				Name:    "CNAME",
-				Aliases: []string{"cname"},
-				Usage:   "write the domain to CNAME file",
-				Count:   &isCNAME,
-			}, &cli.BoolFlag{
-				Name:  "silent",
-				Usage: "do not print the uploading info, only print the result",
-				Count: &isSilent,
-			}},
-		Action: func(cCtx *cli.Context) error {
-			if email := c.surgesh.Whoami(); email == "" {
-				fmt.Println("<YOU ARE NOT LOGGED IN>")
-				return fmt.Errorf("unauthorized")
-			}
-
-			dir := cCtx.Args().Get(0)
-
-			if dir == "" {
-				fmt.Printf("Usage: %s upload <path_to_dir> <domain>\n\n", os.Args[0])
-				fmt.Println(`Use "<CUSTOM-SUBDOMAIN>.surge.sh" if you do not have your own domain`)
-				fmt.Println("To setup custom domain, see")
-				fmt.Print("https://surge.world/ \nhttps://surge.sh/help/adding-a-custom-domain")
-				return nil
-			} else {
-				if !isDir(dir) {
-					return fmt.Errorf("%s is not a directory", dir)
+	Commands = append(Commands,
+		&cli.Command{
+			Name:      "upload",
+			Aliases:   []string{"deploy"},
+			Usage:     "Upload a directory (a.k.a. deploy a project) to surge.sh",
+			ArgsUsage: "<path_to_dir> <domain>",
+			Flags: []cli.Flag{
+				&cli.BoolFlag{
+					Name:    "CNAME",
+					Aliases: []string{"cname"},
+					Usage:   "write the domain to CNAME file",
+					Count:   &isCNAME,
+				}, &cli.BoolFlag{
+					Name:  "silent",
+					Usage: "do not print the uploading info, only print the result",
+					Count: &isSilent,
+				}},
+			Action: func(cCtx *cli.Context) error {
+				if email := surgesh.Whoami(); email == "" {
+					fmt.Println("<YOU ARE NOT LOGGED IN>")
+					return fmt.Errorf("unauthorized")
 				}
-			}
 
-			domain := cCtx.Args().Get(1)
-			cnameFilePath := path.Join(dir, "CNAME")
+				dir := cCtx.Args().Get(0)
 
-			if domain == "" {
-				b, _ := os.ReadFile(cnameFilePath)
-				domain = strings.Trim(string(b), " ")
-			}
-
-			if domain == "" {
-				fmt.Printf("Usage: %s upload <path_to_dir> <domain>\n\n", os.Args[0])
-				absPath, _ := filepath.Abs(dir)
-				fmt.Println("You are going to upload local directory: ", absPath)
-				fmt.Printf("You haven't specify a domain and the %s file does not provide a domain\n", cnameFilePath)
-				return fmt.Errorf("command failed")
-			}
-
-			if err := c.surgesh.Upload(domain, dir, func(byteLine []byte) {
-				onUploadEvent(byteLine, isSilent > 0)
-			}); err != nil {
-				return err
-			} else {
-				if isCNAME > 0 {
-					return os.WriteFile(cnameFilePath, []byte(domain), 0666)
+				if dir == "" {
+					fmt.Printf("Usage: %s upload <path_to_dir> <domain>\n\n", os.Args[0])
+					fmt.Println(`Use "<CUSTOM-SUBDOMAIN>.surge.sh" if you do not have your own domain`)
+					fmt.Println("To setup custom domain, see")
+					fmt.Print("https://surge.world/ \nhttps://surge.sh/help/adding-a-custom-domain")
+					return nil
+				} else {
+					if !utils.IsDir(dir) {
+						return fmt.Errorf("%s is not a directory", dir)
+					}
 				}
-				return nil
-			}
-		},
-	}
-}
 
-func isDir(f string) bool {
-	fi, err := os.Stat(f)
-	return !os.IsNotExist(err) && fi.IsDir()
+				domain := cCtx.Args().Get(1)
+				cnameFilePath := path.Join(dir, "CNAME")
+
+				if domain == "" {
+					b, _ := os.ReadFile(cnameFilePath)
+					domain = strings.Trim(string(b), " ")
+				}
+
+				if domain == "" {
+					fmt.Printf("Usage: %s upload <path_to_dir> <domain>\n\n", os.Args[0])
+					absPath, _ := filepath.Abs(dir)
+					fmt.Println("You are going to upload local directory: ", absPath)
+					fmt.Printf("You haven't specify a domain and the %s file does not provide a domain\n", cnameFilePath)
+					return fmt.Errorf("command failed")
+				}
+
+				fmt.Print("Preparing for upload...")
+				if err := surgesh.Upload(domain, dir, func(byteLine []byte) {
+					onUploadEvent(byteLine, isSilent > 0)
+				}); err != nil {
+					return err
+				} else {
+					if isCNAME > 0 {
+						return os.WriteFile(cnameFilePath, []byte(domain), 0666)
+					}
+					return nil
+				}
+			},
+		})
 }
 
 func onUploadEvent(byteLine []byte, isSilent bool) {
@@ -95,13 +93,21 @@ func onUploadEvent(byteLine []byte, isSilent bool) {
 	m := make(map[string]any)
 	json.Unmarshal(byteLine, &m)
 
+	pad14 := func(s string) string {
+		pad := (14 - len(s)) / 2
+		if pad <= 0 {
+			return s
+		}
+		return strings.Repeat(" ", pad) + s
+	}
+
 	// print the result info
 	handleInfo := func() {
 		p := types.OnUploadInfo{}
 		json.Unmarshal(byteLine, &p)
 
 		for _, url := range p.Urls {
-			fmt.Printf("[%-12s]\nhttps://%s\n", url.Name, url.Domain)
+			fmt.Printf("[%-14s]\nhttps://%s\n", pad14(url.Name), url.Domain)
 		}
 	}
 
@@ -113,6 +119,11 @@ func onUploadEvent(byteLine []byte, isSilent bool) {
 		return
 	}
 
+	printf := func(format string, a ...any) {
+		utils.ClearLine()
+		fmt.Printf(format, a...)
+	}
+
 	// not silent, print upload progress info
 	switch m["type"].(string) {
 	case "progress":
@@ -120,22 +131,23 @@ func onUploadEvent(byteLine []byte, isSilent bool) {
 			p := types.OnUploadProgress{}
 			json.Unmarshal(byteLine, &p)
 
-			if p.End {
-				fmt.Printf("%-7s <end>\n", p.Id)
-			} else {
-				fmt.Printf("%-7s %s \n", p.Id, p.File)
-			}
 			percentage := fmt.Sprintf("%.2f%%", float32(p.Written)*100/float32(p.Total))
-			fmt.Printf("%-7s %d/%d\n", percentage, p.Written, p.Total)
+			if p.End {
+				printf("%-7s [%-7s %s/%s]", p.Id,
+					percentage, utils.FormatBytes(p.Written), utils.FormatBytes(p.Total))
+			} else {
+				printf("%-7s [%-7s %s/%s] %s", p.Id,
+					percentage, utils.FormatBytes(p.Written), utils.FormatBytes(p.Total), p.File)
+			}
+
 		}
 	case "subscription":
 		{
 		}
 	case "ip":
 		{
-			fmt.Println()
-			fmt.Printf("IP %s\n", m["data"].(map[string]any)["ip"])
-			fmt.Println()
+			utils.ClearLine()
+			fmt.Printf("[%-14s]\n%s\n", pad14("IP Address"), m["data"].(map[string]any)["ip"])
 		}
 	case "info":
 		{
