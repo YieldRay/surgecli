@@ -7,7 +7,7 @@ import (
 
 	"github.com/yieldray/surgecli/api"
 	"github.com/yieldray/surgecli/types"
-	surgeUtils "github.com/yieldray/surgecli/utils"
+	utils "github.com/yieldray/surgecli/utils"
 )
 
 type Surge struct {
@@ -26,7 +26,7 @@ func (surge *Surge) SetEmailAndToken(email, token string) {
 }
 
 // new a Surge instance with default http client
-// and automatically load emain&token from `~/.netrc`
+// and automatically load email&token from `~/.netrc`
 // if there is still no token, please call `surge.Login()` to login
 func New() *Surge {
 	surge := &Surge{
@@ -37,13 +37,13 @@ func New() *Surge {
 		// try to load token from environment variables
 		surge.email = `<no local email, use "surgecli account" to check from remote!>`
 		surge.token = token
-		// this step is actually use less, but is compatiable with official surge client
+		// this step is actually use less, but is compatible with official surge client
 		if login := os.Getenv("SURGE_LOGIN"); login != "" {
 			surge.email = login
 		}
 	} else {
 		// try to load email and token from .netrc file
-		email, token, _ := surgeUtils.ReadNetrc()
+		email, token, _ := utils.ReadNetrc()
 		surge.email = email
 		surge.token = token
 	}
@@ -69,9 +69,9 @@ func (surge *Surge) Login(username, password string) (email string, err error) {
 	surge.token = t.Token
 
 	// custom config file
-	surgeUtils.ConfAddAccount(t.Email, t.Token)
+	utils.ConfAddAccount(t.Email, t.Token)
 
-	return t.Email, surgeUtils.WriteNetrc(t.Email, t.Token)
+	return t.Email, utils.WriteNetrc(t.Email, t.Token)
 }
 
 // logout and clear the `~/.netrc`
@@ -82,7 +82,7 @@ func (surge *Surge) Logout() (email string, err error) {
 		return email, errors.New("not logged-in")
 	}
 
-	if err = surgeUtils.RemoveNetrc(); err != nil {
+	if err = utils.RemoveNetrc(); err != nil {
 		return
 	} else {
 		surge.email = ""

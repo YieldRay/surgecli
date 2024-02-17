@@ -13,7 +13,7 @@ func init() {
 	Commands = append(Commands,
 		&cli.Command{
 			Name:    "account",
-			Aliases: []string{"me"},
+			Aliases: []string{"plan"},
 			Usage:   "Show account information",
 			Action: func(cCtx *cli.Context) error {
 

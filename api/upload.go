@@ -16,7 +16,7 @@ import (
 	"strings"
 	"time"
 
-	surgeUtils "github.com/yieldray/surgecli/utils"
+	utils "github.com/yieldray/surgecli/utils"
 )
 
 // client =  &http.Client{}
@@ -24,7 +24,7 @@ import (
 // src = <the directory path>
 // onEventStream <jsonString=>void>
 func Upload(client *http.Client, token, domain, src string, onEventStream func(byteLine []byte)) (err error) {
-	if !surgeUtils.IsDir(src) {
+	if !utils.IsDir(src) {
 		return errors.New("not a directory")
 	}
 	// 获取绝对路径，保证tar是压缩了一个文件夹而不是其内容（当src为当前目录时）
@@ -119,7 +119,7 @@ func Upload(client *http.Client, token, domain, src string, onEventStream func(b
 	req.Header.Add("file-count", fmt.Sprint(fileCount))
 	req.Header.Add("project-size", fmt.Sprint(projectSize))
 	req.Header.Add("timestamp", string(time.Now().UTC().Format(time.RFC3339)))
-	req.Header.Add("version", "0.23.1")
+	req.Header.Add("version", Version)
 	req.Header.Add("user-agent", "")
 
 	res, err := client.Do(req)
@@ -186,7 +186,7 @@ func computeIgnoreFn(src string) func(fullPath, tarPath string) bool {
 			return true // we can not access the file, so ignore
 		}
 
-		// 这是surge文档规定的默认ingore列表
+		// 这是surge文档规定的默认ignore列表
 		defaultIgnoreList := []string{".git", ".*", ".*.*~", "node_modules", "bower_components"}
 		for _, pattern := range defaultIgnoreList {
 			matched, _ := filepath.Match(pattern, filepath.Base(fullPath))

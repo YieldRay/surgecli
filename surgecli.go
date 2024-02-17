@@ -12,7 +12,7 @@ func main() {
 
 	app := &cli.App{
 		Name:     "surgecli",
-		Usage:    "thrid party surge.sh cli",
+		Usage:    "third party surge.sh cli",
 		Commands: surgecli.Commands,
 		Flags: []cli.Flag{
 			&cli.BoolFlag{

@@ -9,6 +9,8 @@ Features:
 -   Multi-user support
 -   Friendly for CI environments
 
+> The only difference is that we need use `surgecli upload` or `surgecli deploy` to deploy sites
+
 For github actions, see [deploy-to-surge-action](https://github.com/YieldRay/deploy-to-surge-action)
 
 ## usage
@@ -31,36 +33,37 @@ surgecli teardown mydomain.example.net
 You may want to upload your site with something like Github Actions, see this
 
 ```sh
-# first, fetch token from your local machine
+# if you have already logged-in, run this
+surgecli token
+# or just fetch the token, but do not perform login
 surgecli fetch-token <username> <password>
-# if you have already logged-in, prefer this
-surgecli fetch-token --local
 # for another machine, set environment variable
 export SURGE_TOKEN=<your_token>
 # use other command that require token without login
-surgecli upload --silent . mysite.surge.sh
+surgecli upload --silent ./dist mysite.surge.sh
 ```
 
 Command help
 
 ```sh
 NAME:
-   surgecli - thrid party surge.sh cli
+   surgecli - third party surge.sh cli
 
 USAGE:
    surgecli [global options] command [command options]
 
 COMMANDS:
-   account, me           Show account information
+   account, plan         Show account information
    api                   Set or Show API base URL, the official one is https://surge.surge.sh
-   fetch-token, token    Fetch token by email and password, but do not save the token like login command
+   fetch-token           Fetch token by email and password, but do not save the token like login command
    list, ls              List my sites
    login                 Login (or create new account) to surge.sh
    logout                Logout from surge.sh
    su                    Switch user
    teardown, delete, rm  Delete site from current account
-   upload, deploy        Upload a directory (a.k.a. deploy a project) to surge.sh
-   whoami                Show my email
+   token                 Show current token
+   upload, deploy        Upload a directory (i.e. deploy a project) to surge.sh
+   whoami                Show who you are logged in as
    help, h               Shows a list of commands or help for one command
 
 GLOBAL OPTIONS:

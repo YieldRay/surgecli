@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/urfave/cli/v2"
+	"github.com/yieldray/surgecli/api"
 	"github.com/yieldray/surgecli/types"
 	"github.com/yieldray/surgecli/utils"
 )
@@ -16,23 +17,29 @@ import (
 func init() {
 	var isCNAME int
 	var isSilent int
+	var version string
 
 	Commands = append(Commands,
 		&cli.Command{
 			Name:      "upload",
 			Aliases:   []string{"deploy"},
-			Usage:     "Upload a directory (a.k.a. deploy a project) to surge.sh",
+			Usage:     "Upload a directory (i.e. deploy a project) to surge.sh",
 			ArgsUsage: "<path_to_dir> <domain>",
 			Flags: []cli.Flag{
 				&cli.BoolFlag{
 					Name:    "CNAME",
 					Aliases: []string{"cname"},
-					Usage:   "write the domain to CNAME file",
+					Usage:   "Write the domain to CNAME file",
 					Count:   &isCNAME,
 				}, &cli.BoolFlag{
 					Name:  "silent",
-					Usage: "do not print the uploading info, only print the result",
+					Usage: "Do not print the uploading info, only print the result",
 					Count: &isSilent,
+				}, &cli.StringFlag{
+					Name:        "version",
+					Usage:       "Customize the version string",
+					Value:       version,
+					DefaultText: api.Version,
 				}},
 			Action: func(cCtx *cli.Context) error {
 				if email := surgesh.Whoami(); email == "" {

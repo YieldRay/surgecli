@@ -10,7 +10,7 @@ func init() {
 	Commands = append(Commands,
 		&cli.Command{
 			Name:  "whoami",
-			Usage: "Show my email",
+			Usage: "Show who you are logged in as",
 			Action: func(cCtx *cli.Context) error {
 				if email := surgesh.Whoami(); email == "" {
 					fmt.Println("<YOU ARE NOT LOGGED IN>")
