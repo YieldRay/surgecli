@@ -81,18 +81,25 @@ func init() {
 					fmt.Print("Preparing for upload...")
 				}
 
-				if err := surgesh.Upload(domain, dir, func(byteLine []byte) {
+				if err := clearOnError(surgesh.Upload(domain, dir, func(byteLine []byte) {
 					onUploadEvent(byteLine, isSilent > 0)
-				}); err != nil {
+				})); err != nil {
 					return err
 				} else {
 					if isCNAME > 0 {
-						return os.WriteFile(cnameFilePath, []byte(domain), 0666)
+						return clearOnError(os.WriteFile(cnameFilePath, []byte(domain), 0666))
 					}
 					return nil
 				}
 			},
 		})
+}
+
+func clearOnError(err error) error {
+	if err != nil {
+		utils.ClearLine()
+	}
+	return err
 }
 
 func onUploadEvent(byteLine []byte, isSilent bool) {

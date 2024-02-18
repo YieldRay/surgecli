@@ -129,7 +129,7 @@ func Upload(client *http.Client, token, domain, src string, onEventStream func(b
 
 	// 若上传不成功，将res读取为字符串返回error
 	if res.StatusCode == 403 {
-		return fmt.Errorf("%s %s", "you do not have permission to publish to ", domain)
+		return fmt.Errorf("you do not have permission to publish to %s", domain)
 	}
 	if res.StatusCode != 200 {
 		b, err := io.ReadAll(res.Body)
