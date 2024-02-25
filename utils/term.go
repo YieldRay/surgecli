@@ -25,3 +25,9 @@ func ClearLine() {
 	fmt.Print(strings.Repeat(" ", termWidth))
 	fmt.Print("\r")
 }
+
+func ClearLineStderr() {
+	fmt.Fprint(os.Stderr, "\r")
+	fmt.Fprint(os.Stderr, strings.Repeat(" ", termWidth))
+	fmt.Fprint(os.Stderr, "\r")
+}

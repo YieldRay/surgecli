@@ -20,7 +20,7 @@ import (
 )
 
 // client =  &http.Client{}
-// domain = domainplaceholder.surge.sh
+// domain = domain-placeholder.surge.sh
 // src = <the directory path>
 // onEventStream <jsonString=>void>
 func Upload(client *http.Client, token, domain, src string, onEventStream func(byteLine []byte)) (err error) {

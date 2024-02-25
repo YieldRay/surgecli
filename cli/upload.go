@@ -17,6 +17,7 @@ import (
 func init() {
 	var isCNAME int
 	var isSilent int
+	var isJSON int
 	var version string
 
 	Commands = append(Commands,
@@ -35,6 +36,10 @@ func init() {
 					Name:  "silent",
 					Usage: "Do not print the uploading info, only print the result",
 					Count: &isSilent,
+				}, &cli.BoolFlag{
+					Name:  "json",
+					Usage: "Only print the final info as json",
+					Count: &isJSON,
 				}, &cli.StringFlag{
 					Name:        "version",
 					Usage:       "Customize the version string",
@@ -78,11 +83,11 @@ func init() {
 				}
 
 				if isSilent == 0 {
-					fmt.Print("Preparing for upload...")
+					fmt.Fprint(os.Stderr, "Preparing for upload...")
 				}
 
 				if err := clearOnError(surgesh.Upload(domain, dir, func(byteLine []byte) {
-					onUploadEvent(byteLine, isSilent > 0)
+					onUploadEvent(byteLine, isSilent > 0, isJSON > 0)
 				})); err != nil {
 					return err
 				} else {
@@ -102,7 +107,7 @@ func clearOnError(err error) error {
 	return err
 }
 
-func onUploadEvent(byteLine []byte, isSilent bool) {
+func onUploadEvent(byteLine []byte, isSilent bool, isJSON bool) {
 	if len(byteLine) == 0 {
 		return
 	}
@@ -123,8 +128,13 @@ func onUploadEvent(byteLine []byte, isSilent bool) {
 		p := types.OnUploadInfo{}
 		json.Unmarshal(byteLine, &p)
 
-		for _, url := range p.Urls {
-			fmt.Printf("[%-14s]\nhttps://%s\n", pad14(url.Name), url.Domain)
+		if isJSON {
+			j, _ := json.MarshalIndent(p, "", "    ")
+			fmt.Print(string(j))
+		} else {
+			for _, url := range p.Urls {
+				fmt.Printf("[%-14s]\nhttps://%s\n", pad14(url.Name), url.Domain)
+			}
 		}
 	}
 
@@ -133,12 +143,12 @@ func onUploadEvent(byteLine []byte, isSilent bool) {
 		if m["type"].(string) == "info" {
 			handleInfo()
 		}
-		return
+		return // skip print progress
 	}
 
-	printf := func(format string, a ...any) {
-		utils.ClearLine()
-		fmt.Printf(format, a...)
+	eprintf := func(format string, a ...any) {
+		utils.ClearLineStderr()
+		fmt.Fprintf(os.Stderr, format, a...)
 	}
 
 	// not silent, print upload progress info
@@ -150,10 +160,10 @@ func onUploadEvent(byteLine []byte, isSilent bool) {
 
 			percentage := fmt.Sprintf("%.2f%%", float32(p.Written)*100/float32(p.Total))
 			if p.End {
-				printf("%-7s [%-7s %s/%s]", p.Id,
+				eprintf("%-7s [%-7s %s/%s]", p.Id,
 					percentage, utils.FormatBytes(p.Written), utils.FormatBytes(p.Total))
 			} else {
-				printf("%-7s [%-7s %s/%s] %s", p.Id,
+				eprintf("%-7s [%-7s %s/%s] %s", p.Id,
 					percentage, utils.FormatBytes(p.Written), utils.FormatBytes(p.Total), p.File)
 			}
 
@@ -164,7 +174,9 @@ func onUploadEvent(byteLine []byte, isSilent bool) {
 	case "ip":
 		{
 			utils.ClearLine()
-			fmt.Printf("[%-14s]\n%s\n", pad14("IP Address"), m["data"].(map[string]any)["ip"])
+			if !isJSON {
+				fmt.Printf("[%-14s]\n%s\n", pad14("IP Address"), m["data"].(map[string]any)["ip"])
+			}
 		}
 	case "info":
 		{
