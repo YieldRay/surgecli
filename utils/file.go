@@ -1,10 +1,13 @@
 package utils
 
-import "os"
+import (
+	"os"
+	"strings"
+)
 
 func IsDir(f string) bool {
 	fi, err := os.Stat(f)
-	return !os.IsNotExist(err) && fi.IsDir()
+	return err == nil && fi.IsDir()
 }
 
 func IsFileExist(path string) bool {
@@ -19,4 +22,20 @@ func IsFileExist(path string) bool {
 	} else {
 		return s.Mode().IsRegular()
 	}
+}
+
+func ReadTextFile(name string) (string, error) {
+	b, err := os.ReadFile(name)
+	if err != nil {
+		return "", err
+	}
+	return string(b), nil
+}
+
+func ReadTextFileTrim(name string) (string, error) {
+	str, err := ReadTextFile(name)
+	if err != nil {
+		return "", err
+	}
+	return strings.Trim(str, " "), nil
 }

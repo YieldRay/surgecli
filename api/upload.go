@@ -5,7 +5,6 @@ import (
 	"bufio"
 	"bytes"
 	"compress/gzip"
-	"errors"
 	"fmt"
 	"io"
 	"io/fs"
@@ -25,10 +24,13 @@ import (
 // onEventStream <jsonString=>void>
 func Upload(client *http.Client, token, domain, src string, onEventStream func(byteLine []byte)) (err error) {
 	if !utils.IsDir(src) {
-		return errors.New("not a directory")
+		return fmt.Errorf("%s is not a directory", src)
 	}
 	// 获取绝对路径，保证tar是压缩了一个文件夹而不是其内容（当src为当前目录时）
-	src, _ = filepath.Abs(src)
+	src, err = filepath.Abs(src)
+	if err != nil {
+		return err
+	}
 
 	computeTarPath := computeTarPathFn(src)
 	computeIgnore := computeIgnoreFn(src)
@@ -138,13 +140,6 @@ func Upload(client *http.Client, token, domain, src string, onEventStream func(b
 			return err
 		}
 		return fmt.Errorf("%s", b)
-
-		// TODO：读取返回的json再封装为error
-
-		// m := make(map[string]interface{})
-		// if err = json.Unmarshal(b, &m); err != nil {
-		// 	return errors.New(res.Status)
-		// }
 	}
 
 	reader := bufio.NewReader(res.Body)
@@ -154,9 +149,7 @@ func Upload(client *http.Client, token, domain, src string, onEventStream func(b
 		if err == io.EOF {
 			break
 		}
-
 		onEventStream(line)
-
 	}
 
 	return nil

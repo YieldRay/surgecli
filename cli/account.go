@@ -7,14 +7,23 @@ import (
 	"github.com/charmbracelet/huh/spinner"
 	"github.com/urfave/cli/v2"
 	"github.com/yieldray/surgecli/types"
+	"github.com/yieldray/surgecli/utils"
 )
 
 func init() {
+	var isJSON int
+
 	Commands = append(Commands,
 		&cli.Command{
 			Name:    "account",
 			Aliases: []string{"plan"},
 			Usage:   "Show account information",
+			Flags: []cli.Flag{
+				&cli.BoolFlag{
+					Name:  "json",
+					Usage: "Only print JSON",
+					Count: &isJSON,
+				}},
 			Action: func(cCtx *cli.Context) error {
 
 				if email := surgesh.Whoami(); email == "" {
@@ -30,6 +39,12 @@ func init() {
 
 				if err != nil {
 					return err
+				}
+
+				// only print json
+				if isJSON > 0 {
+					fmt.Print(utils.JSONStringify(acc))
+					return nil
 				}
 
 				fmt.Printf("%-6s: %s\n", "Email", acc.Email)

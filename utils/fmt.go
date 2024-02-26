@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"encoding/json"
 	"fmt"
 	"strconv"
 )
@@ -16,4 +17,9 @@ func FormatBytes(bytes int64) string {
 		exp++
 	}
 	return fmt.Sprintf("%.2f %cB", float64(bytes)/float64(div), "KMGTPE"[exp])
+}
+
+func JSONStringify(v any) string {
+	j, _ := json.MarshalIndent(v, "", "    ")
+	return (string(j))
 }

@@ -11,6 +11,7 @@ import (
 
 func init() {
 	var isShort int
+	var isJSON int
 
 	Commands = append(Commands,
 		&cli.Command{
@@ -22,6 +23,10 @@ func init() {
 					Name:  "short",
 					Usage: "Only print domain list",
 					Count: &isShort,
+				}, &cli.BoolFlag{
+					Name:  "json",
+					Usage: "Only print JSON",
+					Count: &isJSON,
 				}},
 			Action: func(cCtx *cli.Context) error {
 				if email := surgesh.Whoami(); email == "" {
@@ -38,6 +43,13 @@ func init() {
 				if err != nil {
 					return err
 				} else {
+
+					// only print json
+					if isJSON > 0 {
+						fmt.Print(utils.JSONStringify(list))
+						return nil
+					}
+
 					// only print domain
 					if isShort > 0 {
 						for _, site := range list {
@@ -47,11 +59,11 @@ func init() {
 					}
 
 					// print full info
-					s := func(fc int) string {
-						if fc == 1 {
-							return fmt.Sprintf("%d file", fc)
+					s := func(count int) string {
+						if count == 1 {
+							return fmt.Sprintf("%d file", count)
 						}
-						return fmt.Sprintf("%d files", fc)
+						return fmt.Sprintf("%d files", count)
 					}
 
 					for _, site := range list {

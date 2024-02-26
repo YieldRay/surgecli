@@ -60,18 +60,13 @@ func init() {
 					fmt.Println("To setup custom domain, see")
 					fmt.Print("https://surge.world/ \nhttps://surge.sh/help/adding-a-custom-domain")
 					return nil
-				} else {
-					if !utils.IsDir(dir) {
-						return fmt.Errorf("%s is not a directory", dir)
-					}
 				}
 
 				domain := cCtx.Args().Get(1)
 				cnameFilePath := path.Join(dir, "CNAME")
 
 				if domain == "" {
-					b, _ := os.ReadFile(cnameFilePath)
-					domain = strings.Trim(string(b), " ")
+					domain, _ = utils.ReadTextFileTrim(cnameFilePath)
 				}
 
 				if domain == "" {
@@ -129,8 +124,7 @@ func onUploadEvent(byteLine []byte, isSilent bool, isJSON bool) {
 		json.Unmarshal(byteLine, &p)
 
 		if isJSON {
-			j, _ := json.MarshalIndent(p, "", "    ")
-			fmt.Print(string(j))
+			fmt.Print(utils.JSONStringify(p))
 		} else {
 			for _, url := range p.Urls {
 				fmt.Printf("[%-14s]\nhttps://%s\n", pad14(url.Name), url.Domain)
