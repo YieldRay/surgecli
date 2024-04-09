@@ -64,6 +64,12 @@ func ConfAddAccount(email, token string) error {
 	})
 }
 
+func ConfDelAccount(email string) error {
+	return modConf(func(c *SurgeCliConf) {
+		delete(c.Accounts, email)
+	})
+}
+
 func ConfGetEmailList() []string {
 	c := readConf()
 	list := make([]string, 0, len(c.Accounts))

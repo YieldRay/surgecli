@@ -82,6 +82,8 @@ func (surge *Surge) Logout() (email string, err error) {
 		return email, errors.New("not logged-in")
 	}
 
+	utils.ConfDelAccount(email)
+
 	if err = utils.RemoveNetrc(); err != nil {
 		return
 	} else {
