@@ -97,7 +97,7 @@ func init() {
 
 func clearOnError(err error) error {
 	if err != nil {
-		utils.ClearLine()
+		fmt.Print(utils.CLEAR_LINE)
 	}
 	return err
 }
@@ -140,11 +140,6 @@ func onUploadEvent(byteLine []byte, isSilent bool, isJSON bool) {
 		return // skip print progress
 	}
 
-	eprintf := func(format string, a ...any) {
-		utils.ClearLineStderr()
-		fmt.Fprintf(os.Stderr, format, a...)
-	}
-
 	// not silent, print upload progress info
 	switch m["type"].(string) {
 	case "progress":
@@ -154,10 +149,10 @@ func onUploadEvent(byteLine []byte, isSilent bool, isJSON bool) {
 
 			percentage := fmt.Sprintf("%.2f%%", float32(p.Written)*100/float32(p.Total))
 			if p.End {
-				eprintf("%-7s [%-7s %s/%s]", p.Id,
+				utils.Cfprintf(os.Stderr, "%-7s [%-7s %s/%s]", p.Id,
 					percentage, utils.FormatBytes(p.Written), utils.FormatBytes(p.Total))
 			} else {
-				eprintf("%-7s [%-7s %s/%s] %s", p.Id,
+				utils.Cfprintf(os.Stderr, "%-7s [%-7s %s/%s] %s", p.Id,
 					percentage, utils.FormatBytes(p.Written), utils.FormatBytes(p.Total), p.File)
 			}
 
@@ -167,9 +162,8 @@ func onUploadEvent(byteLine []byte, isSilent bool, isJSON bool) {
 		}
 	case "ip":
 		{
-			utils.ClearLine()
 			if !isJSON {
-				fmt.Printf("[%-14s]\n%s\n", pad14("IP Address"), m["data"].(map[string]any)["ip"])
+				utils.Cfprintf(os.Stdout, "[%-14s]\n%s\n", pad14("IP Address"), m["data"].(map[string]any)["ip"])
 			}
 		}
 	case "info":

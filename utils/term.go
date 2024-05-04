@@ -2,32 +2,12 @@ package utils
 
 import (
 	"fmt"
-	"os"
-	"strings"
-
-	"golang.org/x/term"
+	"io"
 )
 
-var termWidth int
+const CLEAR_LINE = "\r\u001b[K"
 
-func init() {
-	fd := int(os.Stdin.Fd())
-	var err error
-
-	termWidth, _, err = term.GetSize(fd)
-	if err != nil {
-		termWidth = 100
-	}
-}
-
-func ClearLine() {
-	fmt.Print("\r")
-	fmt.Print(strings.Repeat(" ", termWidth))
-	fmt.Print("\r")
-}
-
-func ClearLineStderr() {
-	fmt.Fprint(os.Stderr, "\r")
-	fmt.Fprint(os.Stderr, strings.Repeat(" ", termWidth))
-	fmt.Fprint(os.Stderr, "\r")
+// / ClearLine fprintf
+func Cfprintf(w io.Writer, format string, a ...any) {
+	fmt.Fprintf(w, "\r\u001b[K%s", fmt.Sprintf(format, a...))
 }
